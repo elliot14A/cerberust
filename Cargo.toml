@@ -1,0 +1,6 @@
+[workspace]
+resolver = "2"
+members = ["cerberust", "postgres-driver", "repositories", "surrealdb-driver"]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
