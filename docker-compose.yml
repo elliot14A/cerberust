@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  ###########################################################################
+  #######                        DATABASES                            #######
+  ###########################################################################
+  auth-database:
+    image: surrealdb/surrealdb:latest
+    restart: always
+    command: start --user auth --pass auth file:/surrealdb
+    ports:
+      - 8000:8000
+    volumes:
+      - ./volumes/surrealdb:/surrealdb
+    networks:
+      - cerberust
+
+networks:
+   cerberust:
+

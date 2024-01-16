@@ -1,0 +1,17 @@
+[package]
+name = "cerberust"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-trait = "0.1"
+postgres-driver = { optional = true, path = "../postgres-driver" }
+surrealdb-driver = { optional = true, path = "../surrealdb-driver" }
+repositories = { path = "../repositories" }
+tokio = { version = "1.35", features = ["full"] }
+
+[features]
+default = ["surrealdb-driver"]
+postgres = ["postgres-driver"]
