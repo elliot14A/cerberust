@@ -1,2 +1,2 @@
 # cerberust
-A fast authentication service written in rust
+A fast authentication server written in rust
