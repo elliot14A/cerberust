@@ -4,7 +4,7 @@ services:
   ###########################################################################
   #######                        DATABASES                            #######
   ###########################################################################
-  auth-database:
+  surrealdb:
     image: surrealdb/surrealdb:latest
     restart: always
     command: start --user auth --pass auth file:/surrealdb

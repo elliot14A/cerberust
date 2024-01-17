@@ -22,7 +22,7 @@ pub struct UpdateUserInput {
 }
 
 /// `User` represents a user in the database.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: String,
     pub name: String,
@@ -30,11 +30,15 @@ pub struct User {
     #[serde(skip_serializing)]
     password: String,
     pub email_verified: bool,
-    #[serde(rename = "createdAt")]
     pub created_at: DateTime<Utc>,
-    #[serde(rename = "updatedAt")]
     pub updated_at: DateTime<Utc>,
     accounts: Vec<Account>,
+}
+
+impl User {
+    pub fn get_password(&self) -> &str {
+        &self.password
+    }
 }
 
 /// `UserWhereInput` represents the data needed to query for a user.

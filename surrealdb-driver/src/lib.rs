@@ -1,3 +1,6 @@
+mod account;
+mod user;
+
 use async_trait::async_trait;
 use repositories::Database;
 

@@ -4,25 +4,19 @@ use serde::{Deserialize, Serialize};
 /// `CreateAccount` represents the data needed to create a new account.
 #[derive(Debug, Deserialize)]
 pub struct CreateAccount {
-    #[serde(rename = "userId")]
     pub user_id: String,
-    #[serde(rename = "accountType")]
     pub account_type: String,
-    #[serde(rename = "providerAccountId")]
     pub provider_account_id: String,
     pub provider: String,
 }
 
 /// `Account` represents an account in the database.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Account {
     id: String,
-    #[serde(rename = "userId")]
     user_id: String,
-    #[serde(rename = "accountType")]
     account_type: String,
     provider: String,
-    #[serde(rename = "providerAccountId")]
     provider_account_id: String,
     #[serde(skip_serializing)]
     refresh_token: Option<String>,
