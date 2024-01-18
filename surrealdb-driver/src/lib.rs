@@ -1,9 +1,11 @@
-mod account;
-mod user;
+#![allow(dead_code)]
+pub(crate) mod account;
+pub(crate) mod user;
 
-use async_trait::async_trait;
-use repositories::Database;
+use once_cell::sync::Lazy;
+use surrealdb::{engine::remote::http::Client, Surreal};
 
+pub(crate) static DB: Lazy<Surreal<Client>> = Lazy::new(Surreal::init);
 pub struct DatabaseImpl;
 
 // #[async_trait]

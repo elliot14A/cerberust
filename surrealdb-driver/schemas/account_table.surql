@@ -11,7 +11,7 @@ DEFINE FIELD scope ON account TYPE option<string>;
 DEFINE FIELD id_token ON account TYPE option<string>;
 DEFINE FIELD session_state ON account TYPE option<string>;
 DEFINE FIELD created_at ON account TYPE datetime default time::now();
-DEFINE FIELD updated_at ON account TYPE datetime default time::now();
+DEFINE FIELD updated ON user TYPE datetime DEFAULT time::now() VALUE time::now();
 
 DEFINE EVENT updated_at ON TABLE account WHEN $event = "UPDATE" THEN (
   update account SET updated_at = time::now() WHERE id = $value.id

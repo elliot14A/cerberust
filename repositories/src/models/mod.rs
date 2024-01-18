@@ -3,12 +3,22 @@ mod user;
 
 pub use account::CreateAccount;
 
-use self::{
+pub use self::{
     account::{Account, AccountWhereInput},
     user::{CreateUserInput, UpdateUserInput, User, UserWhereInput},
 };
 
-pub enum Error {}
+/// Error type for db operations.
+#[derive(Debug)]
+pub enum Error {
+    UserNotFound { message: String },
+    UsernameOrEmailAlreadyExists { message: String },
+    AccountNotFound { id: String },
+    AccountAlreadyExists { id: String },
+    AccountNotOwnedByUser { id: String },
+    InvalidQuery { message: String },
+    InternalError { message: String },
+}
 
 pub type Result<T> = std::result::Result<T, Error>;
 

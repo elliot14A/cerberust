@@ -11,27 +11,27 @@ pub struct CreateAccount {
 }
 
 /// `Account` represents an account in the database.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Account {
-    id: String,
-    user_id: String,
-    account_type: String,
-    provider: String,
-    provider_account_id: String,
+    pub id: String,
+    pub user_id: String,
+    pub account_type: String,
+    pub provider: String,
+    pub provider_account_id: String,
     #[serde(skip_serializing)]
-    refresh_token: Option<String>,
+    pub refresh_token: Option<String>,
     #[serde(skip_serializing)]
-    access_token: Option<String>,
+    pub access_token: Option<String>,
     #[serde(skip_serializing)]
-    expires_at: DateTime<Utc>,
+    pub expires_at: DateTime<Utc>,
     #[serde(skip_serializing)]
-    scope: Option<String>,
+    pub scope: Option<String>,
     #[serde(skip_serializing)]
-    id_token: Option<String>,
+    pub id_token: Option<String>,
     #[serde(skip_serializing)]
-    session_state: Option<String>,
-    created_at: DateTime<Utc>,
-    upated_at: DateTime<Utc>,
+    pub session_state: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 /// `AccountWhereInput` represents the data needed to query for an account.
