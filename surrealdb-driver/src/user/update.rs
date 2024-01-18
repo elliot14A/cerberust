@@ -10,6 +10,7 @@ pub async fn update(input: UpdateUserInput) -> Result<User> {
     } = input;
     let query = format!("UPDATE user:{} set", id)
         + build_query(
+            "",
             vec![("name", name), ("email", email), ("password", password)],
             " ,",
         )?

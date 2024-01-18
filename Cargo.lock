@@ -2844,6 +2844,7 @@ dependencies = [
  "serde",
  "snafu",
  "surrealdb",
+ "tokio",
 ]
 
 [[package]]

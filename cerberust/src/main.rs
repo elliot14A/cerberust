@@ -1,5 +1,5 @@
 #[cfg(feature = "default")]
-use surrealdb_driver::DatabaseImpl;
+use surrealdb_driver::SurrealDriver as DatabaseImpl;
 
 #[cfg(feature = "postgres")]
 use postgres_driver::DatabaseImpl;

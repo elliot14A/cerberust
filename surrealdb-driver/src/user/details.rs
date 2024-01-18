@@ -13,9 +13,15 @@ pub async fn get_user(query: UserWhereInput) -> Result<User> {
         }
         .into());
     }
+    let id = id.map(|id| "user:".to_string() + id.as_str());
 
     let query = "SELECT * FROM user".to_string()
-        + build_query(vec![("id", id), ("email", email), ("name", name)], " AND")?.as_str();
+        + build_query(
+            " WHERE",
+            vec![("id", id), ("email", email), ("name", name)],
+            " AND",
+        )?
+        .as_str();
 
     let mut response = DB.query(&query).await.map_err(|e| Error::InternalError {
         message: e.to_string(),
