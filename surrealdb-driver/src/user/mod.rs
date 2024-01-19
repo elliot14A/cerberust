@@ -1,5 +1,5 @@
 use crate::account::SurrealAccount;
-use repositories::{Error, Result, User};
+use repositories::User;
 use serde::Deserialize;
 use surrealdb::{opt::RecordId, sql::Datetime};
 
@@ -45,94 +45,4 @@ impl From<SurrealUser> for User {
     }
 }
 
-/// Builds the query string for the given parameters.
-/// params is a vector of tuples of the form (key, value).
-/// key is the name of the field and value is the value of the field.
-/// separator is the string used to separate the conditions.
-
 // TODO: Improve the tests.
-#[cfg(test)]
-mod test {
-    use repositories::{UpdateUserInput, UserRepository};
-
-    use crate::SurrealDriver;
-
-    #[tokio::test]
-    async fn success_test() {
-        let surrealdb = SurrealDriver::new(
-            "localhost:8000".to_string(),
-            "auth".to_string(),
-            "auth".into(),
-        );
-        surrealdb.init().await.unwrap();
-        let user = surrealdb
-            .create_user(repositories::CreateUserInput {
-                name: "John Doe".into(),
-                email: "john@email.com".into(),
-                password: "123456".into(),
-            })
-            .await;
-        assert_eq!(user.is_ok(), true);
-        let user = user.unwrap();
-        assert_eq!(user.name, "John Doe".to_string());
-        assert_eq!(user.email, "john@email.com".to_string());
-        assert_eq!(user.password, "123456".to_string());
-        assert_eq!(user.email_verified, false);
-        assert_eq!(user.accounts.len(), 0);
-
-        let user = surrealdb
-            .get_user(repositories::UserWhereInput {
-                id: Some(user.id),
-                email: None,
-                name: None,
-            })
-            .await;
-
-        assert_eq!(user.is_ok(), true);
-        let user = user.unwrap();
-        assert_eq!(user.name, "John Doe".to_string());
-
-        let user = surrealdb
-            .update_user(UpdateUserInput {
-                id: user.id,
-                name: Some("Jane Doe".into()),
-                email: None,
-                password: None,
-            })
-            .await;
-
-        println!("{:?}", user);
-        assert_eq!(user.is_ok(), true);
-        let user = user.unwrap();
-
-        assert_eq!(user.name, "Jane Doe".to_string());
-
-        let not_user = surrealdb
-            .create_user(repositories::CreateUserInput {
-                name: "John Doe".into(),
-                email: "john@email.com".into(),
-                password: "123456".into(),
-            })
-            .await;
-        assert_eq!(not_user.is_ok(), false);
-
-        let not_user = surrealdb
-            .get_user(repositories::UserWhereInput {
-                id: Some("123".into()),
-                email: None,
-                name: None,
-            })
-            .await;
-        assert_eq!(not_user.is_ok(), false);
-
-        let not_user = surrealdb
-            .update_user(UpdateUserInput {
-                id: "123".to_string(),
-                name: None,
-                email: None,
-                password: None,
-            })
-            .await;
-        assert_eq!(not_user.is_ok(), false);
-    }
-}

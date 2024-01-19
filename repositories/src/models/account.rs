@@ -23,7 +23,7 @@ pub struct Account {
     #[serde(skip_serializing)]
     pub access_token: Option<String>,
     #[serde(skip_serializing)]
-    pub expires_at: DateTime<Utc>,
+    pub expires_at: Option<DateTime<Utc>>,
     #[serde(skip_serializing)]
     pub scope: Option<String>,
     #[serde(skip_serializing)]

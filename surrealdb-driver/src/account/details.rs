@@ -12,8 +12,10 @@ pub async fn get_account(input: AccountWhereInput) -> Result<Account> {
         provider_account_id,
         provider,
     } = input;
+    let id = id.map(|id| format!("account:{}", id));
+    let user_id = user_id.map(|id| format!("user:{}", id));
     let surql = r#" 
-            select * from user 
+            select * from account
     "#
     .to_string()
         + build_query(
@@ -28,7 +30,6 @@ pub async fn get_account(input: AccountWhereInput) -> Result<Account> {
             " AND",
         )?
         .as_str();
-
     let mut response = DB.query(surql).await.map_err(|e| Error::InternalError {
         message: e.to_string(),
     })?;

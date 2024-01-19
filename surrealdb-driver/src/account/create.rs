@@ -1,4 +1,5 @@
 use repositories::{Account, AccountWhereInput, CreateAccountInput, Error, Result, UserWhereInput};
+use surrealdb::opt::RecordId;
 
 use crate::{account::SurrealAccount, user::details::get_user, DB};
 
@@ -41,17 +42,20 @@ pub async fn create(input: CreateAccountInput) -> Result<Account> {
 
     let surql = r#" 
             create account content {
+                user: $user_id,
                 account_type: $account_type,
                 provider_account_id: $provider_account_id,
                 provider: $provider
             }
     "#;
+    let user_id = RecordId::from(("user", user_id.as_str()));
 
     let mut response = DB
         .query(surql)
         .bind(("account_type", account_type))
         .bind(("provider_account_id", provider_account_id))
         .bind(("provider", provider))
+        .bind(("user_id", user_id))
         .await
         .map_err(|e| Error::InternalError {
             message: e.to_string(),

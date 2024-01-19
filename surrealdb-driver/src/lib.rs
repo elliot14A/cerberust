@@ -79,13 +79,11 @@ impl SurrealDriver {
         Ok(())
     }
 }
-// #[async_trait]
-// impl Database for DatabaseImpl {
-//     async fn new() -> Self {
-//         println!("surreadb impl");
-//         Self
-//     }
-// }
+
+/// Builds the query string for the given parameters.
+/// params is a vector of tuples of the form (key, value).
+/// key is the name of the field and value is the value of the field.
+/// separator is the string used to separate the conditions.
 pub fn build_query(
     prefix: &str,
     params: Vec<(&str, Option<String>)>,
@@ -106,4 +104,121 @@ pub fn build_query(
     query.push_str(&conditions.join(separator));
 
     Ok(query)
+}
+
+#[cfg(test)]
+mod test {
+    use repositories::{AccountRepository, UpdateUserInput, UserRepository};
+
+    use crate::SurrealDriver;
+
+    #[tokio::test]
+    async fn test() {
+        let surrealdb = SurrealDriver::new(
+            "localhost:8000".to_string(),
+            "auth".to_string(),
+            "auth".into(),
+        );
+        surrealdb.init().await.unwrap();
+        let user = surrealdb
+            .create_user(repositories::CreateUserInput {
+                name: "John Doe".into(),
+                email: "john@email.com".into(),
+                password: "123456".into(),
+            })
+            .await;
+        assert_eq!(user.is_ok(), true);
+        let user = user.unwrap();
+        assert_eq!(user.name, "John Doe".to_string());
+        assert_eq!(user.email, "john@email.com".to_string());
+        assert_eq!(user.password, "123456".to_string());
+        assert_eq!(user.email_verified, false);
+        assert_eq!(user.accounts.len(), 0);
+
+        let user = surrealdb
+            .get_user(repositories::UserWhereInput {
+                id: Some(user.id),
+                email: None,
+                name: None,
+            })
+            .await;
+
+        assert_eq!(user.is_ok(), true);
+        let user = user.unwrap();
+        assert_eq!(user.name, "John Doe".to_string());
+
+        let user = surrealdb
+            .update_user(UpdateUserInput {
+                id: user.id,
+                name: Some("Jane Doe".into()),
+                email: None,
+                password: None,
+            })
+            .await;
+
+        assert_eq!(user.is_ok(), true);
+        let user = user.unwrap();
+
+        assert_eq!(user.name, "Jane Doe".to_string());
+
+        let not_user = surrealdb
+            .create_user(repositories::CreateUserInput {
+                name: "John Doe".into(),
+                email: "john@email.com".into(),
+                password: "123456".into(),
+            })
+            .await;
+        assert_eq!(not_user.is_ok(), false);
+
+        let not_user = surrealdb
+            .get_user(repositories::UserWhereInput {
+                id: Some("123".into()),
+                email: None,
+                name: None,
+            })
+            .await;
+        assert_eq!(not_user.is_ok(), false);
+
+        let not_user = surrealdb
+            .update_user(UpdateUserInput {
+                id: "123".to_string(),
+                name: None,
+                email: None,
+                password: None,
+            })
+            .await;
+        assert_eq!(not_user.is_ok(), false);
+
+        let account = surrealdb
+            .create_account(repositories::CreateAccountInput {
+                user_id: user.id.clone(),
+                account_type: "github".into(),
+                provider_account_id: "123".into(),
+                provider: "github".into(),
+            })
+            .await;
+        assert_eq!(account.is_ok(), true);
+        let account = account.unwrap();
+        assert_eq!(account.user_id, user.id.clone());
+
+        let account = surrealdb
+            .get_account(repositories::AccountWhereInput {
+                id: Some(account.id),
+                user_id: None,
+                account_type: None,
+                provider_account_id: None,
+                provider: None,
+            })
+            .await;
+
+        assert_eq!(account.is_ok(), true);
+        let account = account.unwrap();
+        assert_eq!(account.user_id, user.id.clone());
+
+        let accounts = surrealdb.get_user_accounts(user.id).await;
+
+        assert_eq!(accounts.is_ok(), true);
+        let accounts = accounts.unwrap();
+        assert_eq!(accounts.len(), 1);
+    }
 }
