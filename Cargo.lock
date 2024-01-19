@@ -2842,7 +2842,6 @@ dependencies = [
  "once_cell",
  "repositories",
  "serde",
- "snafu",
  "surrealdb",
  "tokio",
 ]

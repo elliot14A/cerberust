@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 /// `CreateAccount` represents the data needed to create a new account.
 #[derive(Debug, Deserialize)]
-pub struct CreateAccount {
+pub struct CreateAccountInput {
     pub user_id: String,
     pub account_type: String,
     pub provider_account_id: String,

@@ -1,7 +1,7 @@
 mod account;
 mod user;
 
-pub use account::CreateAccount;
+pub use account::CreateAccountInput;
 
 pub use self::{
     account::{Account, AccountWhereInput},
@@ -13,8 +13,8 @@ pub use self::{
 pub enum Error {
     UserNotFound { message: String },
     UsernameOrEmailAlreadyExists { message: String },
-    AccountNotFound { id: String },
-    AccountAlreadyExists { id: String },
+    AccountNotFound { message: String },
+    AccountAlreadyExists { message: String },
     AccountNotOwnedByUser { id: String },
     InvalidQuery { message: String },
     InternalError { message: String },
@@ -31,8 +31,8 @@ pub trait UserRepository {
 
 #[async_trait::async_trait]
 pub trait AccountRepository {
-    async fn create_account(&self, input: CreateAccount) -> Result<Account>;
+    async fn create_account(&self, input: CreateAccountInput) -> Result<Account>;
     async fn get_account(&self, query: AccountWhereInput) -> Result<Account>;
-    async fn get_user_accounts(&self, query: UserWhereInput) -> Result<Vec<Account>>;
+    async fn get_user_accounts(&self, user_id: String) -> Result<Vec<Account>>;
     async fn delete_account(&self, query: AccountWhereInput) -> Result<Account>;
 }
