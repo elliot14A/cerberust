@@ -4,8 +4,8 @@ pub(crate) mod user;
 
 use once_cell::sync::Lazy;
 use repositories::{
-    AccountRepository, AccountWhereInput, CreateAccountInput, CreateUserInput, Error, Result,
-    UpdateUserInput, UserRepository, UserWhereInput,
+    AccountRepository, AccountWhereInput, CreateAccountInput, CreateUserInput, Database, Error,
+    Result, UpdateUserInput, UserRepository, UserWhereInput,
 };
 use surrealdb::{
     engine::remote::http::{Client, Http},
@@ -77,6 +77,18 @@ impl SurrealDriver {
                 message: format!("Unable to connect to surrealdb: {}", e.to_string()),
             })?;
         Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl Database for SurrealDriver {
+    async fn new(db_url: &str, ns: &str, db: &str) -> Self {
+        let surrealdb = SurrealDriver::new(db_url.to_string(), ns.to_string(), db.to_string());
+        let s = surrealdb.init().await;
+        if s.is_err() {
+            panic!("Unable to connect to surrealdb: {:?}", s.unwrap_err());
+        }
+        surrealdb
     }
 }
 
