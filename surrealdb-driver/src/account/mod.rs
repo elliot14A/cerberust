@@ -2,11 +2,10 @@ use repositories::Account;
 use serde::Deserialize;
 use surrealdb::{opt::RecordId, sql::Datetime};
 
-mod create;
-mod delete;
-mod details;
-mod list;
-mod update;
+pub mod create;
+pub mod delete;
+pub mod details;
+pub mod list;
 
 /// Internal representation of an account.
 #[derive(Deserialize)]

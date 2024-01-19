@@ -4,7 +4,8 @@ pub(crate) mod user;
 
 use once_cell::sync::Lazy;
 use repositories::{
-    CreateUserInput, Error, Result, UpdateUserInput, UserRepository, UserWhereInput,
+    AccountRepository, AccountWhereInput, CreateAccountInput, CreateUserInput, Error, Result,
+    UpdateUserInput, UserRepository, UserWhereInput,
 };
 use surrealdb::{
     engine::remote::http::{Client, Http},
@@ -34,6 +35,23 @@ impl UserRepository for SurrealDriver {
 
     async fn get_user(&self, query: UserWhereInput) -> Result<repositories::User> {
         get_user(query).await
+    }
+}
+
+#[async_trait::async_trait]
+impl AccountRepository for SurrealDriver {
+    async fn create_account(&self, input: CreateAccountInput) -> Result<repositories::Account> {
+        account::create::create(input).await
+    }
+    async fn get_account(&self, query: AccountWhereInput) -> Result<repositories::Account> {
+        account::details::get_account(query).await
+    }
+
+    async fn get_user_accounts(&self, user_id: String) -> Result<Vec<repositories::Account>> {
+        account::list::get_user_accounts(user_id).await
+    }
+    async fn delete_account(&self, query: AccountWhereInput) -> Result<()> {
+        account::delete::delete(query).await
     }
 }
 
@@ -68,3 +86,24 @@ impl SurrealDriver {
 //         Self
 //     }
 // }
+pub fn build_query(
+    prefix: &str,
+    params: Vec<(&str, Option<String>)>,
+    separator: &str,
+) -> Result<String> {
+    let mut query = prefix.to_string();
+    let conditions: Vec<String> = params
+        .iter()
+        .filter_map(|(key, value)| value.clone().map(|value| format!(" {} = '{}'", key, value)))
+        .collect();
+
+    if conditions.is_empty() {
+        return Err(Error::InvalidQuery {
+            message: "Atleast one of the fields must be present".into(),
+        });
+    }
+
+    query.push_str(&conditions.join(separator));
+
+    Ok(query)
+}

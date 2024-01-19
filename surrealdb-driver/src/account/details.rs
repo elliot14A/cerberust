@@ -1,6 +1,6 @@
 use repositories::{Account, AccountWhereInput, Error, Result};
 
-use crate::{user::build_query, DB};
+use crate::{build_query, DB};
 
 use super::SurrealAccount;
 

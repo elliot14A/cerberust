@@ -14,4 +14,5 @@ tokio = { version = "1.35", features = ["full"] }
 
 [features]
 default = ["surrealdb-driver"]
+surrealdb = ["surrealdb-driver"]
 postgres = ["postgres-driver"]

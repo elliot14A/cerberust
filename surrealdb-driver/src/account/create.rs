@@ -5,7 +5,7 @@ use crate::{account::SurrealAccount, user::details::get_user, DB};
 use super::details::get_account;
 
 // TODO: Reduce the number of queries
-async fn create(input: CreateAccountInput) -> Result<Account> {
+pub async fn create(input: CreateAccountInput) -> Result<Account> {
     let CreateAccountInput {
         user_id,
         account_type,

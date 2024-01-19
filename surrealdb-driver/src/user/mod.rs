@@ -49,27 +49,6 @@ impl From<SurrealUser> for User {
 /// params is a vector of tuples of the form (key, value).
 /// key is the name of the field and value is the value of the field.
 /// separator is the string used to separate the conditions.
-pub fn build_query(
-    prefix: &str,
-    params: Vec<(&str, Option<String>)>,
-    separator: &str,
-) -> Result<String> {
-    let mut query = prefix.to_string();
-    let conditions: Vec<String> = params
-        .iter()
-        .filter_map(|(key, value)| value.clone().map(|value| format!(" {} = '{}'", key, value)))
-        .collect();
-
-    if conditions.is_empty() {
-        return Err(Error::InvalidQuery {
-            message: "Atleast one of the fields must be present".into(),
-        });
-    }
-
-    query.push_str(&conditions.join(separator));
-
-    Ok(query)
-}
 
 // TODO: Improve the tests.
 #[cfg(test)]

@@ -34,5 +34,5 @@ pub trait AccountRepository {
     async fn create_account(&self, input: CreateAccountInput) -> Result<Account>;
     async fn get_account(&self, query: AccountWhereInput) -> Result<Account>;
     async fn get_user_accounts(&self, user_id: String) -> Result<Vec<Account>>;
-    async fn delete_account(&self, query: AccountWhereInput) -> Result<Account>;
+    async fn delete_account(&self, query: AccountWhereInput) -> Result<()>;
 }

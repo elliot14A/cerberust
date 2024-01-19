@@ -2,7 +2,7 @@ use repositories::{Error, Result, User, UserWhereInput};
 
 use crate::{user::SurrealUser, DB};
 
-use super::build_query;
+use crate::build_query;
 
 pub async fn get_user(query: UserWhereInput) -> Result<User> {
     let UserWhereInput { id, email, name } = query;
