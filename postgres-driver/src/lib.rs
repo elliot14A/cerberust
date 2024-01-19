@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use repositories::Database;
+use repositories::DatabaseRepository;
 
 pub struct DatabaseImpl;
 

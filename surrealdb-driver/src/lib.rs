@@ -4,8 +4,8 @@ pub(crate) mod user;
 
 use once_cell::sync::Lazy;
 use repositories::{
-    AccountRepository, AccountWhereInput, CreateAccountInput, CreateUserInput, Database, Error,
-    Result, UpdateUserInput, UserRepository, UserWhereInput,
+    AccountRepository, AccountWhereInput, CreateAccountInput, CreateUserInput, DatabaseRepository,
+    Error, Result, UpdateUserInput, UserRepository, UserWhereInput,
 };
 use surrealdb::{
     engine::remote::http::{Client, Http},
@@ -56,11 +56,6 @@ impl AccountRepository for SurrealDriver {
 }
 
 impl SurrealDriver {
-    /// Creates a new instance of the SurrealDriver with given db_url, ns and db.
-    pub fn new(db_url: String, ns: String, db: String) -> Self {
-        Self { db_url, ns, db }
-    }
-
     /// Initializes the surrealdb connection.
     pub async fn init(&self) -> Result<()> {
         DB.connect::<Http>(&self.db_url)
@@ -81,9 +76,12 @@ impl SurrealDriver {
 }
 
 #[async_trait::async_trait]
-impl Database for SurrealDriver {
-    async fn new(db_url: &str, ns: &str, db: &str) -> Self {
-        let surrealdb = SurrealDriver::new(db_url.to_string(), ns.to_string(), db.to_string());
+impl DatabaseRepository for SurrealDriver {
+    async fn new() -> Self {
+        let db_url = std::env::var("SURREALDB_URL").unwrap_or_else(|_| "localhost:8000".into());
+        let ns = std::env::var("SURREALDB_NS").unwrap_or_else(|_| "auth".into());
+        let db = std::env::var("SURREALDB_DB").unwrap_or_else(|_| "auth".into());
+        let surrealdb = SurrealDriver { db_url, ns, db };
         let s = surrealdb.init().await;
         if s.is_err() {
             panic!("Unable to connect to surrealdb: {:?}", s.unwrap_err());
@@ -126,11 +124,11 @@ mod test {
 
     #[tokio::test]
     async fn test() {
-        let surrealdb = SurrealDriver::new(
-            "localhost:8000".to_string(),
-            "auth".to_string(),
-            "auth".into(),
-        );
+        let surrealdb = SurrealDriver {
+            db_url: "localhost:8000".to_string(),
+            ns: "auth".to_string(),
+            db: "auth".into(),
+        };
         surrealdb.init().await.unwrap();
         let user = surrealdb
             .create_user(repositories::CreateUserInput {

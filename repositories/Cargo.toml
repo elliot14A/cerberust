@@ -9,3 +9,4 @@ edition = "2021"
 async-trait = "0.1"
 serde = { version = "1", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
+validator = { version = "0", features = ["derive"] }
