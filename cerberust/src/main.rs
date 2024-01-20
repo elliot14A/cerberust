@@ -1,9 +1,12 @@
 #![allow(dead_code)]
 
-use server::build_http_server;
 mod api;
+mod extractors;
 mod logger;
 mod server;
+mod utils;
+
+use server::build_http_server;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {

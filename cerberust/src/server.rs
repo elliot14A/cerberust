@@ -26,6 +26,7 @@ pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
         .allow_credentials(false);
 
     let database_repositoy = DatabaseDriver::new().await;
+    info!("🚀 Connected to Database: {}", database_repositoy.name());
     let app = init_routes::<DatabaseDriver>();
 
     let app = app

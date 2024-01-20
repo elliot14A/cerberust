@@ -1,9 +1,6 @@
 version: '3'
 
 services:
-  ###########################################################################
-  #######                        DATABASES                            #######
-  ###########################################################################
   surrealdb:
     image: surrealdb/surrealdb:latest
     restart: always
@@ -15,6 +12,33 @@ services:
     networks:
       - cerberust
 
+  mailslurper:
+    image: oryd/mailslurper:latest-smtps
+    ports:
+      - "4436:4436"
+      - "4437:4437"
+    networks:
+      - cerberust
+
+  cerberust:
+    build:
+      context: .
+    environment:
+      - SURREALDB_URL=surrealdb:8000
+      - SURREALDB_NS=auth
+      - SURREALDB_DB=auth
+    ports:
+      - "8080:8080"
+    depends_on:
+      - surrealdb
+    develop:
+      watch:
+        - action: rebuild
+          path: .
+          ignore:
+            - target/
+            - volumes/
+    networks:
+      - cerberust
 networks:
    cerberust:
-

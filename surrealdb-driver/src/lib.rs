@@ -77,6 +77,9 @@ impl SurrealDriver {
 
 #[async_trait::async_trait]
 impl DatabaseRepository for SurrealDriver {
+    fn name(&self) -> String {
+        String::from("SurrealDB")
+    }
     async fn new() -> Self {
         let db_url = std::env::var("SURREALDB_URL").unwrap_or_else(|_| "localhost:8000".into());
         let ns = std::env::var("SURREALDB_NS").unwrap_or_else(|_| "auth".into());
