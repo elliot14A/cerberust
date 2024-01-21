@@ -32,11 +32,23 @@ where
         })
         .await?;
     let email = user.email.clone();
+    let user_id = user.id.clone();
     // send verification email
     // make sending email async as this might take some time
     tokio::spawn(async move {
-        smtp.send_verification_email(email).unwrap();
+        let token = uuid::Uuid::new_v4().to_string();
+        // ignore the error for now
+        db.create_token(repositories::CreateEmailVerificationTokenInput {
+            user_id,
+            token: token.clone(),
+        })
+        .await
+        .unwrap();
+        smtp.send_verification_email(email, token).unwrap();
     });
-    let response = to_response::<User>("Verification email is sent".to_owned(), user);
+    let response = to_response::<User>(
+        "Your email is registered, please verify it now".to_owned(),
+        user,
+    );
     Ok(Json(response))
 }

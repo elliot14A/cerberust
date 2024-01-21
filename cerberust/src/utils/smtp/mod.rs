@@ -45,7 +45,7 @@ impl SmtpService {
         }
     }
 
-    pub fn send_verification_email(&self, to: String) -> Result<(), ApiErrResp> {
-        verify::verification_email(self, to)
+    pub fn send_verification_email(&self, to: String, token: String) -> Result<(), ApiErrResp> {
+        verify::verification_email(self, to, token)
     }
 }

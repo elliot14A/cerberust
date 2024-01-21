@@ -32,6 +32,10 @@ services:
       - "8080:8080"
     depends_on:
       - surrealdb
+    volumes:
+      - ./surrealdb-driver/schemas:/app/schemas
+      - ./surrealdb-driver/events:/app/events
+      - ./surrealdb-driver/.surrealdb:/app/.surrealdb
     develop:
       watch:
         - action: rebuild

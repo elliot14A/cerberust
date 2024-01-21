@@ -26,6 +26,7 @@ argon2 = "0.5"
 time = "0.3"
 lettre = "0.11"
 axum-macros = "0.4"
+uuid = "1.7"
 
 [features]
 default = ["surrealdb"]
