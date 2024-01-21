@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::{error::Result, utils::response::to_response};
 use axum::{response::IntoResponse, Extension, Json};
+use hyper::StatusCode;
 use repositories::{CreateUserInput, DatabaseRepository, User};
 
 use crate::{
@@ -50,5 +51,5 @@ where
         "Your email is registered, please verify it now".to_owned(),
         user,
     );
-    Ok(Json(response))
+    Ok((StatusCode::CREATED, Json(response)))
 }

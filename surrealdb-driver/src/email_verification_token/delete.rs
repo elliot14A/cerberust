@@ -4,6 +4,7 @@ use crate::{build_query, DB};
 
 pub async fn delete(input: EmailVerificationTokenWhereInput) -> Result<()> {
     let EmailVerificationTokenWhereInput { id, user_id, token } = input;
+    let user_id = user_id.map(|id| format!("user:{}", id));
     let surql = r#"DELETE email_verification_token"#.to_string()
         + build_query(
             " WHERE",

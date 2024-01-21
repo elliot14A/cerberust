@@ -87,9 +87,16 @@ impl From<Error> for ApiErrResp {
                 message,
             },
             Error::AccountNotOwnedByUser { id: _ } => todo!(),
-            Error::InvalidQuery { message: _ } => todo!(),
+            Error::InvalidQuery { message } => ApiErrResp::internal_server_error(message),
             Error::InternalError { message } => ApiErrResp::internal_server_error(message),
-            _ => todo!(),
+            Error::EmailVerificationTokenNotFound { message } => {
+                ApiErrResp::unauthorized(Some(message))
+            }
+            Error::EmailVerificationTokenAlreadyExists => ApiErrResp {
+                code: StatusCode::CONFLICT,
+                error: "CONFLICT".to_string(),
+                message: "You already have a token".to_string(),
+            },
         }
     }
 }

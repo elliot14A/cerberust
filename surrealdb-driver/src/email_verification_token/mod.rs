@@ -24,3 +24,46 @@ impl From<SurrealEmailVerificationToken> for EmailVerificationToken {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use repositories::{CreateEmailVerificationTokenInput, EmailVerificationTokenRepository};
+    use surrealdb::sql::Uuid;
+
+    use crate::SurrealDriver;
+
+    #[tokio::test]
+    async fn test() {
+        let surrealdb = SurrealDriver {
+            db_url: "localhost:8000".to_string(),
+            ns: "auth".to_string(),
+            db: "auth".into(),
+        };
+
+        surrealdb.init().await.unwrap();
+        let token_string = Uuid::new_v4().to_string();
+        let token = surrealdb
+            .create_token(CreateEmailVerificationTokenInput {
+                user_id: "dasdadf".to_string(),
+                token: token_string.clone(),
+            })
+            .await;
+        assert_eq!(token.is_ok(), true);
+        let token = token.unwrap();
+        assert_eq!(token.token, token_string);
+
+        let token = surrealdb
+            .find_one_token(repositories::EmailVerificationTokenWhereInput {
+                user_id: None,
+                token: Some(token.token),
+                id: None,
+            })
+            .await;
+
+        println!("{:?}", token);
+
+        assert_eq!(token.is_ok(), true);
+        let token = token.unwrap();
+        assert_eq!(token.token, token_string);
+    }
+}

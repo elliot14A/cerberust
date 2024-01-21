@@ -1,20 +1,20 @@
 use repositories::{EmailVerificationToken, EmailVerificationTokenWhereInput, Error, Result};
 
-use crate::{build_query, email_verification_token::SurrealEmailVerificationToken};
+use crate::email_verification_token::SurrealEmailVerificationToken;
 
+// TODO: fix token issue and use all fields
 pub async fn details(input: EmailVerificationTokenWhereInput) -> Result<EmailVerificationToken> {
-    let EmailVerificationTokenWhereInput { id, user_id, token } = input;
+    let EmailVerificationTokenWhereInput {
+        id: _,
+        user_id: _,
+        token,
+    } = input;
 
-    let surql = r#"SELECT * FROM email_verification_token"#.to_string()
-        + build_query(
-            " WHERE",
-            vec![("id", id), ("user", user_id), ("token", token)],
-            " AND",
-        )?
-        .as_str();
+    let surql = r#"SELECT * FROM email_verification_token WHERE token = $verify_token"#.to_string();
 
     let mut response = crate::DB
         .query(&surql)
+        .bind(("verify_token", token))
         .await
         .map_err(|e| Error::InternalError {
             message: e.to_string(),
@@ -27,5 +27,10 @@ pub async fn details(input: EmailVerificationTokenWhereInput) -> Result<EmailVer
         })?
         .pop()
         .map(|d| d.into());
+    if token.is_none() {
+        return Err(Error::EmailVerificationTokenNotFound {
+            message: format!("Token not found for given query: {}", surql),
+        });
+    }
     Ok(token.unwrap())
 }
