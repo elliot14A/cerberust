@@ -27,6 +27,7 @@ pub struct UpdateUserInput {
     pub email: Option<String>,
     #[validate(length(min = 8))]
     pub password: Option<String>,
+    pub email_verified: Option<bool>,
 }
 
 /// `User` represents a user in the database.

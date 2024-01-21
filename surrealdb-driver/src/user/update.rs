@@ -10,11 +10,18 @@ pub async fn update(input: UpdateUserInput) -> Result<User> {
         name,
         email,
         password,
+        email_verified,
     } = input;
+    let email_verified = email_verified.map(|x| x.to_string());
     let query = format!("UPDATE user:{} set", id)
         + build_query(
             "",
-            vec![("name", name), ("email", email), ("password", password)],
+            vec![
+                ("name", name),
+                ("email", email),
+                ("password", password),
+                ("email_verified", email_verified),
+            ],
             " ,",
         )?
         .as_str();

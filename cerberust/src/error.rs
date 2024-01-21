@@ -89,6 +89,7 @@ impl From<Error> for ApiErrResp {
             Error::AccountNotOwnedByUser { id: _ } => todo!(),
             Error::InvalidQuery { message: _ } => todo!(),
             Error::InternalError { message } => ApiErrResp::internal_server_error(message),
+            _ => todo!(),
         }
     }
 }

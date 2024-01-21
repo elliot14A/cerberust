@@ -1,16 +1,19 @@
 #![allow(dead_code)]
 pub(crate) mod account;
+mod email_verification_token;
 pub(crate) mod user;
 
 use once_cell::sync::Lazy;
 use repositories::{
-    AccountRepository, AccountWhereInput, CreateAccountInput, CreateUserInput, DatabaseRepository,
+    AccountRepository, AccountWhereInput, CreateAccountInput, CreateEmailVerificationTokenInput,
+    CreateUserInput, DatabaseRepository, EmailVerificationToken, EmailVerificationTokenRepository,
     Error, Result, UpdateUserInput, UserRepository, UserWhereInput,
 };
 use surrealdb::{
     engine::remote::http::{Client, Http},
     Surreal,
 };
+use surrealdb_migrations::MigrationRunner;
 use user::{create::create, details::get_user, update::update};
 
 pub(crate) static DB: Lazy<Surreal<Client>> = Lazy::new(Surreal::init);
@@ -55,6 +58,30 @@ impl AccountRepository for SurrealDriver {
     }
 }
 
+#[async_trait::async_trait]
+impl EmailVerificationTokenRepository for SurrealDriver {
+    async fn create_token(
+        &self,
+        input: CreateEmailVerificationTokenInput,
+    ) -> Result<EmailVerificationToken> {
+        email_verification_token::create::create(input).await
+    }
+
+    async fn find_one_token(
+        &self,
+        input: repositories::EmailVerificationTokenWhereInput,
+    ) -> Result<EmailVerificationToken> {
+        email_verification_token::details::details(input).await
+    }
+
+    async fn delete_token(
+        &self,
+        input: repositories::EmailVerificationTokenWhereInput,
+    ) -> Result<()> {
+        email_verification_token::delete::delete(input).await
+    }
+}
+
 impl SurrealDriver {
     /// Initializes the surrealdb connection.
     pub async fn init(&self) -> Result<()> {
@@ -63,7 +90,6 @@ impl SurrealDriver {
             .map_err(|e| Error::InternalError {
                 message: format!("Unable to connect to surrealdb: {}", e.to_string()),
             })?;
-
         // use the auth namespace and auth database
         DB.use_ns(&self.ns)
             .use_db(&self.db)
@@ -71,6 +97,12 @@ impl SurrealDriver {
             .map_err(|e| Error::InternalError {
                 message: format!("Unable to connect to surrealdb: {}", e.to_string()),
             })?;
+        // run migrations
+        MigrationRunner::new(&DB)
+            .up()
+            .await
+            .expect("Unable to run migrations");
+
         Ok(())
     }
 }
@@ -166,6 +198,7 @@ mod test {
                 name: Some("Jane Doe".into()),
                 email: None,
                 password: None,
+                email_verified: None,
             })
             .await;
 
@@ -198,6 +231,7 @@ mod test {
                 name: None,
                 email: None,
                 password: None,
+                email_verified: None,
             })
             .await;
         assert_eq!(not_user.is_ok(), false);

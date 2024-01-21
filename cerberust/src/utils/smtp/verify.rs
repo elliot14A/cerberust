@@ -12,7 +12,7 @@ pub fn verification_email(smtp: &SmtpService, to: String) -> Result<()> {
     let default_addr = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     let default_host = format!("{}:{}", default_addr, default_http_port);
     let verification_token = "verification_token";
-    let verification_link = format!("{}/{}", default_host, verification_token);
+    let verification_link = format!("{}/api/{}", default_host, verification_token);
 
     let html = format!(
         r#"<!DOCTYPE html>
@@ -28,9 +28,9 @@ pub fn verification_email(smtp: &SmtpService, to: String) -> Result<()> {
                 <p style="font-family: Arial, Helvetica, sans-serif;">
                     Click the link below to verify your email address:
                 </p>
-                <a href="{}" style="font-family: Arial, Helvetica, sans-serif; padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; text-align: center; display: inline-block; border-radius: 4px;">
+                <link href="{}" style="font-family: Arial, Helvetica, sans-serif; padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; text-align: center; display: inline-block; border-radius: 4px;">
                     Verify Email
-                </a>
+                </link>
             </div>
         </body>
         </html>"#,
