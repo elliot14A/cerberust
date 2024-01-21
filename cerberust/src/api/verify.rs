@@ -23,23 +23,23 @@ pub async fn verify<H: DatabaseRepository>(
     if now.signed_duration_since(token.created_at).num_hours() > 1 {
         return Err(ApiErrResp::unauthorized(Some("Token expired".to_string())));
     }
+    let user_id = token.user_id.clone();
 
     ctx.delete_token(EmailVerificationTokenWhereInput {
         id: None,
-        user_id: Some(token.user_id.clone()),
+        user_id: Some(user_id),
         token: None,
     })
     .await?;
 
-    let _ = ctx
-        .update_user(UpdateUserInput {
-            id: token.user_id,
-            email_verified: Some(true),
-            name: None,
-            email: None,
-            password: None,
-        })
-        .await?;
+    ctx.update_user(UpdateUserInput {
+        id: token.user_id,
+        email_verified: Some(true),
+        name: None,
+        email: None,
+        password: None,
+    })
+    .await?;
 
     let response = to_response::<Option<String>>("verfied".to_string(), None);
     Ok(Json(response))

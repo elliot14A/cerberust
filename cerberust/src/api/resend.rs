@@ -1,0 +1,56 @@
+use crate::{
+    error::{ApiErrResp, Result},
+    utils::{response::to_response, smtp::SmtpService},
+};
+use axum::{response::IntoResponse, Extension, Json};
+use hyper::StatusCode;
+use repositories::{DatabaseRepository, UserWhereInput};
+use serde::Deserialize;
+use std::sync::Arc;
+
+#[derive(Debug, Deserialize)]
+pub struct RequestBody {
+    email: String,
+}
+pub async fn resend_verification_email<H: DatabaseRepository>(
+    Extension(ctx): Extension<Arc<H>>,
+    Extension(smtp): Extension<Arc<SmtpService>>,
+    Json(body): Json<RequestBody>,
+) -> Result<impl IntoResponse> {
+    let email = body.email;
+    let user = ctx
+        .get_user(UserWhereInput {
+            id: None,
+            email: Some(email),
+            name: None,
+        })
+        .await?;
+    if user.email_verified {
+        return Err(ApiErrResp {
+            code: StatusCode::CONFLICT,
+            error: "CONFLICT".to_string(),
+            message: "Email already verified".to_string(),
+        });
+    }
+    let user_id = user.id.clone();
+    let email = user.email.clone();
+
+    tokio::spawn(async move {
+        let token = uuid::Uuid::new_v4().to_string();
+        // ignore the error for now
+        ctx.create_token(repositories::CreateEmailVerificationTokenInput {
+            user_id,
+            token: token.clone(),
+        })
+        .await
+        .unwrap();
+        smtp.send_verification_email(email, token).unwrap();
+    });
+
+    let response = to_response::<Option<String>>(
+        "Verification email sent, please check your email".to_string(),
+        None,
+    );
+
+    Ok(Json(response))
+}
