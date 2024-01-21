@@ -12,11 +12,12 @@ services:
     networks:
       - cerberust
 
-  mailslurper:
-    image: oryd/mailslurper:latest-smtps
+  mailhog:
+    build:
+      context: ./mailhog
     ports:
-      - "4436:4436"
-      - "4437:4437"
+      - "1025:1025"
+      - "8025:8025"
     networks:
       - cerberust
 

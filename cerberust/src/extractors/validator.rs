@@ -11,10 +11,10 @@ use thiserror::Error;
 use validator::Validate;
 
 #[derive(Debug, Clone, Copy, Default)]
-pub struct ValidatedJson<T>(pub T);
+pub struct FromValidatedJson<T>(pub T);
 
 #[async_trait]
-impl<T, S> FromRequest<S> for ValidatedJson<T>
+impl<T, S> FromRequest<S> for FromValidatedJson<T>
 where
     T: DeserializeOwned + Validate,
     S: Send + Sync,
@@ -25,7 +25,7 @@ where
     async fn from_request(req: Request, state: &S) -> Result<Self, Self::Rejection> {
         let Json(value) = Json::<T>::from_request(req, state).await?;
         value.validate()?;
-        Ok(ValidatedJson(value))
+        Ok(FromValidatedJson(value))
     }
 }
 
