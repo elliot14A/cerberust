@@ -1,5 +1,5 @@
 use crate::account::SurrealAccount;
-use repositories::User;
+use repositories::user::User;
 use serde::Deserialize;
 use surrealdb::{opt::RecordId, sql::Datetime};
 

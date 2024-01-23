@@ -1,4 +1,5 @@
-use repositories::{Error, Result, User, UserWhereInput};
+use repositories::user::{User, UserWhereInput};
+use repositories::{Error, Result};
 
 use crate::{user::SurrealUser, DB};
 

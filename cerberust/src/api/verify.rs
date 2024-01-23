@@ -5,7 +5,7 @@ use crate::{
     utils::response::to_response,
 };
 use axum::{extract::Path, response::IntoResponse, Extension, Json};
-use repositories::{token::TokenWhereInput, DatabaseRepository, UpdateUserInput};
+use repositories::{token::TokenWhereInput, user::UpdateUserInput, DatabaseRepository};
 
 pub async fn verify<H: DatabaseRepository>(
     Extension(ctx): Extension<Arc<H>>,

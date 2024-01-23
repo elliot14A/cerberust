@@ -2,7 +2,10 @@ use crate::{
     build_query,
     user::{details, SurrealUser},
 };
-use repositories::{Error, Result, UpdateUserInput, User, UserWhereInput};
+use repositories::{
+    user::{UpdateUserInput, User, UserWhereInput},
+    Error, Result,
+};
 
 pub async fn update(input: UpdateUserInput) -> Result<User> {
     let UpdateUserInput {

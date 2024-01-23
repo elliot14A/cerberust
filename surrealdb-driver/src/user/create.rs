@@ -1,4 +1,5 @@
-use repositories::{CreateUserInput, Error, Result, User};
+use repositories::user::{CreateUserInput, User};
+use repositories::{Error, Result};
 
 use crate::{user::SurrealUser, DB};
 

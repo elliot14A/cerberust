@@ -4,7 +4,7 @@ use crate::{
 };
 use axum::{response::IntoResponse, Extension, Json};
 use hyper::StatusCode;
-use repositories::{token::CreateTokenInput, DatabaseRepository, UserWhereInput};
+use repositories::{token::CreateTokenInput, user::UserWhereInput, DatabaseRepository};
 use std::sync::Arc;
 
 use super::VerifyOrResetRequestBody;

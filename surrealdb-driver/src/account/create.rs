@@ -1,4 +1,8 @@
-use repositories::{Account, AccountWhereInput, CreateAccountInput, Error, Result, UserWhereInput};
+use repositories::{
+    account::{Account, AccountWhereInput, CreateAccountInput},
+    user::UserWhereInput,
+    Error, Result,
+};
 use surrealdb::opt::RecordId;
 
 use crate::{account::SurrealAccount, user::details::get_user, DB};

@@ -1,4 +1,7 @@
-use repositories::{Account, AccountWhereInput, Error, Result};
+use repositories::{
+    account::{Account, AccountWhereInput},
+    Error, Result,
+};
 
 use crate::{build_query, DB};
 

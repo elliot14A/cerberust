@@ -3,7 +3,11 @@ use std::sync::Arc;
 use crate::{error::Result, utils::response::to_response};
 use axum::{response::IntoResponse, Extension, Json};
 use hyper::StatusCode;
-use repositories::{token::CreateTokenInput, CreateUserInput, DatabaseRepository, User};
+use repositories::{
+    token::CreateTokenInput,
+    user::{CreateUserInput, User},
+    DatabaseRepository,
+};
 
 use crate::{
     extractors::FromValidatedJson,

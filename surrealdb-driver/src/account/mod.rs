@@ -1,4 +1,4 @@
-use repositories::Account;
+use repositories::account::Account;
 use serde::Deserialize;
 use surrealdb::{opt::RecordId, sql::Datetime};
 

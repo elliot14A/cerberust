@@ -1,4 +1,4 @@
-use repositories::{Account, Error, Result};
+use repositories::{account::Account, Error, Result};
 use surrealdb::opt::RecordId;
 
 use crate::{account::SurrealAccount, DB};

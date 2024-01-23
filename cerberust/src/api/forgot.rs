@@ -5,7 +5,7 @@ use crate::{
     utils::smtp::SmtpService,
 };
 use axum::{response::IntoResponse, Extension, Json};
-use repositories::{DatabaseRepository, UserWhereInput};
+use repositories::{user::UserWhereInput, DatabaseRepository};
 
 use super::VerifyOrResetRequestBody;
 

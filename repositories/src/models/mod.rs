@@ -1,19 +1,11 @@
-mod account;
-mod email_verification_token;
-mod reset_password_token;
+pub mod account;
 pub mod token;
-mod user;
+pub mod user;
 
-pub use account::CreateAccountInput;
-pub use reset_password_token::{
-    CreateResetPasswordTokenInput, ResetPasswordToken, ResetPasswordTokenWhereInput,
-};
+use account::CreateAccountInput;
 
-pub use self::email_verification_token::{
-    CreateEmailVerificationTokenInput, EmailVerificationToken, EmailVerificationTokenWhereInput,
-};
 use self::token::{CreateTokenInput, Token, TokenWhereInput};
-pub use self::{
+use self::{
     account::{Account, AccountWhereInput},
     user::{CreateUserInput, UpdateUserInput, User, UserWhereInput},
 };
@@ -46,19 +38,6 @@ pub trait AccountRepository {
     async fn get_account(&self, query: AccountWhereInput) -> Result<Account>;
     async fn get_user_accounts(&self, user_id: String) -> Result<Vec<Account>>;
     async fn delete_account(&self, query: AccountWhereInput) -> Result<()>;
-}
-
-#[async_trait::async_trait]
-pub trait EmailVerificationTokenRepository {
-    async fn create_token(
-        &self,
-        input: CreateEmailVerificationTokenInput,
-    ) -> Result<EmailVerificationToken>;
-    async fn find_one_token(
-        &self,
-        input: EmailVerificationTokenWhereInput,
-    ) -> Result<EmailVerificationToken>;
-    async fn delete_token(&self, input: EmailVerificationTokenWhereInput) -> Result<()>;
 }
 
 #[async_trait::async_trait]

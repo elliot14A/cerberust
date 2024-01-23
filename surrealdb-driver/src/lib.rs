@@ -6,9 +6,14 @@ pub(crate) mod user;
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use repositories::{
+    account::Account,
     token::{CreateTokenInput, Token, TokenWhereInput},
-    AccountRepository, AccountWhereInput, CreateAccountInput, CreateUserInput, DatabaseRepository,
-    Error, Result, TokenRepository, UpdateUserInput, UserRepository, UserWhereInput,
+    user::{CreateUserInput, User},
+    AccountRepository, DatabaseRepository, Error, Result, TokenRepository, UserRepository,
+};
+use repositories::{
+    account::{AccountWhereInput, CreateAccountInput},
+    user::{UpdateUserInput, UserWhereInput},
 };
 use surrealdb::{
     engine::remote::http::{Client, Http},
@@ -26,32 +31,29 @@ pub struct SurrealDriver {
 
 #[async_trait::async_trait]
 impl UserRepository for SurrealDriver {
-    async fn create_user(
-        &self,
-        input: CreateUserInput,
-    ) -> repositories::Result<repositories::User> {
+    async fn create_user(&self, input: CreateUserInput) -> repositories::Result<User> {
         create(input).await
     }
 
-    async fn update_user(&self, input: UpdateUserInput) -> Result<repositories::User> {
+    async fn update_user(&self, input: UpdateUserInput) -> Result<User> {
         update(input).await
     }
 
-    async fn get_user(&self, query: UserWhereInput) -> Result<repositories::User> {
+    async fn get_user(&self, query: UserWhereInput) -> Result<User> {
         get_user(query).await
     }
 }
 
 #[async_trait::async_trait]
 impl AccountRepository for SurrealDriver {
-    async fn create_account(&self, input: CreateAccountInput) -> Result<repositories::Account> {
+    async fn create_account(&self, input: CreateAccountInput) -> Result<Account> {
         account::create::create(input).await
     }
-    async fn get_account(&self, query: AccountWhereInput) -> Result<repositories::Account> {
+    async fn get_account(&self, query: AccountWhereInput) -> Result<Account> {
         account::details::get_account(query).await
     }
 
-    async fn get_user_accounts(&self, user_id: String) -> Result<Vec<repositories::Account>> {
+    async fn get_user_accounts(&self, user_id: String) -> Result<Vec<Account>> {
         account::list::get_user_accounts(user_id).await
     }
     async fn delete_account(&self, query: AccountWhereInput) -> Result<()> {
