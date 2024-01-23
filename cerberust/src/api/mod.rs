@@ -12,7 +12,11 @@ use register::register;
 use repositories::DatabaseRepository;
 use serde::Deserialize;
 
-use self::{resend::resend_verification_email, verify::verify};
+use self::{
+    forgot::{forgot_password_send_email, reset_password},
+    resend::resend_verification_email,
+    verify::verify,
+};
 
 pub fn init_routes<H: DatabaseRepository>() -> Router {
     Router::new()
@@ -21,6 +25,8 @@ pub fn init_routes<H: DatabaseRepository>() -> Router {
         .route("/register", post(register::<H>))
         .route("/verify/:token", get(verify::<H>))
         .route("/verify/:token", post(verify::<H>))
+        .route("/forgot_password", post(forgot_password_send_email::<H>))
+        .route("/reset_password/:token", post(reset_password::<H>))
 }
 
 #[derive(Debug, Deserialize)]

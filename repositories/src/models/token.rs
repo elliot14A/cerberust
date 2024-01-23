@@ -13,7 +13,7 @@ pub struct Token {
 pub struct TokenWhereInput {
     pub id: Option<String>,
     pub user_id: Option<String>,
-    pub token_type: Option<String>,
+    pub token_type: String,
 }
 
 pub struct CreateTokenInput {

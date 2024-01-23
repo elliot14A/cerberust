@@ -22,7 +22,7 @@ pub async fn verify<H: DatabaseRepository>(
     ctx.delete_token(TokenWhereInput {
         id: None,
         user_id: Some(user_id),
-        token_type: Some("email_verification".to_string()),
+        token_type: "email_verification".to_string(),
     })
     .await?;
 

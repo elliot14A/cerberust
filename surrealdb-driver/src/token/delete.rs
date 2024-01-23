@@ -9,11 +9,16 @@ pub async fn delete_token(input: TokenWhereInput) -> Result<()> {
         id,
     } = input;
     let user_id = user_id.map(|id| format!("user:{}", id));
+    let id = id.map(|id| format!("token:{}", id));
 
     let surql = r#"DELETE token"#.to_string()
         + build_query(
             " WHERE",
-            vec![("id", id), ("user", user_id), ("token_type", token_type)],
+            vec![
+                ("id", id),
+                ("user", user_id),
+                ("token_type", Some(token_type)),
+            ],
             " AND",
         )?
         .as_ref();

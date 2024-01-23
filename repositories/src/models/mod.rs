@@ -42,7 +42,7 @@ pub trait AccountRepository {
 
 #[async_trait::async_trait]
 pub trait TokenRepository {
-    async fn create_token(&self, user_id: CreateTokenInput) -> Result<Token>;
+    async fn create_token(&self, input: CreateTokenInput) -> Result<Token>;
     async fn delete_token(&self, token: TokenWhereInput) -> Result<()>;
     async fn find_token(&self, token: String) -> Result<Token>;
 }
