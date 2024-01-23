@@ -1,14 +1,14 @@
 #![allow(dead_code)]
 pub(crate) mod account;
-mod email_verification_token;
+mod token;
 pub(crate) mod user;
-mod reset_password_token;
 
+use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use repositories::{
-    AccountRepository, AccountWhereInput, CreateAccountInput, CreateEmailVerificationTokenInput,
-    CreateUserInput, DatabaseRepository, EmailVerificationToken, EmailVerificationTokenRepository,
-    Error, Result, UpdateUserInput, UserRepository, UserWhereInput,
+    token::{CreateTokenInput, Token, TokenWhereInput},
+    AccountRepository, AccountWhereInput, CreateAccountInput, CreateUserInput, DatabaseRepository,
+    Error, Result, TokenRepository, UpdateUserInput, UserRepository, UserWhereInput,
 };
 use surrealdb::{
     engine::remote::http::{Client, Http},
@@ -59,30 +59,6 @@ impl AccountRepository for SurrealDriver {
     }
 }
 
-#[async_trait::async_trait]
-impl EmailVerificationTokenRepository for SurrealDriver {
-    async fn create_token(
-        &self,
-        input: CreateEmailVerificationTokenInput,
-    ) -> Result<EmailVerificationToken> {
-        email_verification_token::create::create(input).await
-    }
-
-    async fn find_one_token(
-        &self,
-        input: repositories::EmailVerificationTokenWhereInput,
-    ) -> Result<EmailVerificationToken> {
-        email_verification_token::details::details(input).await
-    }
-
-    async fn delete_token(
-        &self,
-        input: repositories::EmailVerificationTokenWhereInput,
-    ) -> Result<()> {
-        email_verification_token::delete::delete(input).await
-    }
-}
-
 impl SurrealDriver {
     /// Initializes the surrealdb connection.
     pub async fn init(&self) -> Result<()> {
@@ -126,6 +102,20 @@ impl DatabaseRepository for SurrealDriver {
     }
 }
 
+#[async_trait]
+impl TokenRepository for SurrealDriver {
+    async fn create_token(&self, input: CreateTokenInput) -> Result<Token> {
+        Ok(token::create::create(input).await?)
+    }
+
+    async fn delete_token(&self, input: TokenWhereInput) -> Result<()> {
+        Ok(token::delete::delete_token(input).await?)
+    }
+
+    async fn find_token(&self, token: String) -> Result<Token> {
+        Ok(token::details::get_token(token).await?)
+    }
+}
 /// Builds the query string for the given parameters.
 /// params is a vector of tuples of the form (key, value).
 /// key is the name of the field and value is the value of the field.

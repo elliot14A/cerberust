@@ -1,6 +1,7 @@
 mod account;
 mod email_verification_token;
 mod reset_password_token;
+pub mod token;
 mod user;
 
 pub use account::CreateAccountInput;
@@ -11,6 +12,7 @@ pub use reset_password_token::{
 pub use self::email_verification_token::{
     CreateEmailVerificationTokenInput, EmailVerificationToken, EmailVerificationTokenWhereInput,
 };
+use self::token::{CreateTokenInput, Token, TokenWhereInput};
 pub use self::{
     account::{Account, AccountWhereInput},
     user::{CreateUserInput, UpdateUserInput, User, UserWhereInput},
@@ -26,8 +28,7 @@ pub enum Error {
     AccountNotOwnedByUser { id: String },
     InvalidQuery { message: String },
     InternalError { message: String },
-    EmailVerificationTokenNotFound { message: String },
-    EmailVerificationTokenAlreadyExists,
+    TokenNotFound,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -58,4 +59,11 @@ pub trait EmailVerificationTokenRepository {
         input: EmailVerificationTokenWhereInput,
     ) -> Result<EmailVerificationToken>;
     async fn delete_token(&self, input: EmailVerificationTokenWhereInput) -> Result<()>;
+}
+
+#[async_trait::async_trait]
+pub trait TokenRepository {
+    async fn create_token(&self, user_id: CreateTokenInput) -> Result<Token>;
+    async fn delete_token(&self, token: TokenWhereInput) -> Result<()>;
+    async fn find_token(&self, token: String) -> Result<Token>;
 }

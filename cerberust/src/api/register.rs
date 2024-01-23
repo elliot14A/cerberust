@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{error::Result, utils::response::to_response};
 use axum::{response::IntoResponse, Extension, Json};
 use hyper::StatusCode;
-use repositories::{CreateUserInput, DatabaseRepository, User};
+use repositories::{token::CreateTokenInput, CreateUserInput, DatabaseRepository, User};
 
 use crate::{
     extractors::FromValidatedJson,
@@ -39,9 +39,10 @@ where
     tokio::spawn(async move {
         let token = uuid::Uuid::new_v4().to_string();
         // ignore the error for now
-        db.create_token(repositories::CreateEmailVerificationTokenInput {
+        db.create_token(CreateTokenInput {
             user_id,
             token: token.clone(),
+            token_type: "email_verification".to_string(),
         })
         .await
         .unwrap();

@@ -4,7 +4,7 @@ use crate::{
 };
 use axum::{response::IntoResponse, Extension, Json};
 use hyper::StatusCode;
-use repositories::{DatabaseRepository, UserWhereInput};
+use repositories::{token::CreateTokenInput, DatabaseRepository, UserWhereInput};
 use std::sync::Arc;
 
 use super::VerifyOrResetRequestBody;
@@ -35,9 +35,10 @@ pub async fn resend_verification_email<H: DatabaseRepository>(
     tokio::spawn(async move {
         let token = uuid::Uuid::new_v4().to_string();
         // ignore the error for now
-        ctx.create_token(repositories::CreateEmailVerificationTokenInput {
+        ctx.create_token(CreateTokenInput {
             user_id,
             token: token.clone(),
+            token_type: "email_verification".to_string(),
         })
         .await
         .unwrap();

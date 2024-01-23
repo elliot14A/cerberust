@@ -5,19 +5,13 @@ use crate::{
     utils::response::to_response,
 };
 use axum::{extract::Path, response::IntoResponse, Extension, Json};
-use repositories::{DatabaseRepository, EmailVerificationTokenWhereInput, UpdateUserInput};
+use repositories::{token::TokenWhereInput, DatabaseRepository, UpdateUserInput};
 
 pub async fn verify<H: DatabaseRepository>(
     Extension(ctx): Extension<Arc<H>>,
     Path(token): Path<String>,
 ) -> Result<impl IntoResponse> {
-    let token = ctx
-        .find_one_token(EmailVerificationTokenWhereInput {
-            user_id: None,
-            token: Some(token),
-            id: None,
-        })
-        .await?;
+    let token = ctx.find_token(token.clone()).await?;
     // if token is created more than an hour ago, return error
     let now = chrono::Utc::now();
     if now.signed_duration_since(token.created_at).num_hours() > 1 {
@@ -25,10 +19,10 @@ pub async fn verify<H: DatabaseRepository>(
     }
     let user_id = token.user_id.clone();
 
-    ctx.delete_token(EmailVerificationTokenWhereInput {
+    ctx.delete_token(TokenWhereInput {
         id: None,
         user_id: Some(user_id),
-        token: None,
+        token_type: Some("email_verification".to_string()),
     })
     .await?;
 
