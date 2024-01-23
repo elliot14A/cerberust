@@ -1,3 +1,4 @@
+mod forgot;
 mod register;
 mod resend;
 mod verify;
@@ -9,6 +10,7 @@ use axum::{
 };
 use register::register;
 use repositories::DatabaseRepository;
+use serde::Deserialize;
 
 use self::{resend::resend_verification_email, verify::verify};
 
@@ -19,6 +21,11 @@ pub fn init_routes<H: DatabaseRepository>() -> Router {
         .route("/register", post(register::<H>))
         .route("/verify/:token", get(verify::<H>))
         .route("/verify/:token", post(verify::<H>))
+}
+
+#[derive(Debug, Deserialize)]
+pub struct VerifyOrResetRequestBody {
+    email: String,
 }
 
 async fn health() -> impl IntoResponse {

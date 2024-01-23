@@ -1,5 +1,4 @@
 mod forgot;
-mod reset;
 mod verify;
 
 use lettre::{

@@ -2,6 +2,7 @@
 pub(crate) mod account;
 mod email_verification_token;
 pub(crate) mod user;
+mod reset_password_token;
 
 use once_cell::sync::Lazy;
 use repositories::{

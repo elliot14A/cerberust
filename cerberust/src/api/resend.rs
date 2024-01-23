@@ -5,17 +5,14 @@ use crate::{
 use axum::{response::IntoResponse, Extension, Json};
 use hyper::StatusCode;
 use repositories::{DatabaseRepository, UserWhereInput};
-use serde::Deserialize;
 use std::sync::Arc;
 
-#[derive(Debug, Deserialize)]
-pub struct RequestBody {
-    email: String,
-}
+use super::VerifyOrResetRequestBody;
+
 pub async fn resend_verification_email<H: DatabaseRepository>(
     Extension(ctx): Extension<Arc<H>>,
     Extension(smtp): Extension<Arc<SmtpService>>,
-    Json(body): Json<RequestBody>,
+    Json(body): Json<VerifyOrResetRequestBody>,
 ) -> Result<impl IntoResponse> {
     let email = body.email;
     let user = ctx

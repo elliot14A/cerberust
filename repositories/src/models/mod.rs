@@ -1,8 +1,12 @@
 mod account;
 mod email_verification_token;
+mod reset_password_token;
 mod user;
 
 pub use account::CreateAccountInput;
+pub use reset_password_token::{
+    CreateResetPasswordTokenInput, ResetPasswordToken, ResetPasswordTokenWhereInput,
+};
 
 pub use self::email_verification_token::{
     CreateEmailVerificationTokenInput, EmailVerificationToken, EmailVerificationTokenWhereInput,
