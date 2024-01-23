@@ -41,7 +41,7 @@ pub async fn resend_verification_email<H: DatabaseRepository>(
         })
         .await
         .unwrap();
-        smtp.send_verification_email(email, token).unwrap();
+        let _ = smtp.send_verification_email(email, token);
     });
 
     let response = to_response::<Option<String>>(

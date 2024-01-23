@@ -5,6 +5,7 @@ use lettre::{
     transport::smtp::{authentication::Credentials, client::Tls},
     SmtpTransport,
 };
+use tracing::{error, info};
 
 use crate::error::ApiErrResp;
 
@@ -45,6 +46,32 @@ impl SmtpService {
     }
 
     pub fn send_verification_email(&self, to: String, token: String) -> Result<(), ApiErrResp> {
-        verify::verification_email(self, to, token)
+        // send verification email
+        // if sending email fails, retry 5 times
+        self.send_email_with_retries(to, token, 0)
+    }
+
+    fn send_email_with_retries(
+        &self,
+        to: String,
+        token: String,
+        retries: i8,
+    ) -> Result<(), ApiErrResp> {
+        if retries > 5 {
+            return Err(ApiErrResp::internal_server_error(
+                "Unable to send verification email".to_string(),
+            ));
+        }
+        let result = verify::verification_email(&self, to.clone(), token.clone());
+        if result.is_err() {
+            error!("error : {:?}", result.err());
+            info!(
+                "Retrying to send verification email for the {} time",
+                retries
+            );
+            self.send_email_with_retries(to, token, retries + 1)?;
+        }
+        info!("Successfully sent verification email");
+        Ok(())
     }
 }
