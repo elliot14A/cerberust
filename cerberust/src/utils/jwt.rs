@@ -76,8 +76,13 @@ pub async fn create_token(user_id: String, token_type: TokenType) -> Result<Stri
     let claims = Claims::new(user_id, iat, exp);
     let header = Header::new(Algorithm::RS512);
     // read private key from file
-    let private_key = std::fs::read_to_string("./keys/private_key.pem")
-        .map_err(|_| ApiErrResp::internal_server_error(format!("cannot find private_key.pem")))?;
+    let private_key_path = match token_type {
+        TokenType::AccessToken => "./keys/access_private_key.pem",
+        TokenType::RefreshToken => "./keys/refresh_private_key.pem",
+    };
+    let private_key = std::fs::read_to_string(private_key_path).map_err(|_| {
+        ApiErrResp::internal_server_error(format!("cannot find private_key in keys dir"))
+    })?;
     let token = encode(
         &header,
         &claims,
@@ -87,9 +92,13 @@ pub async fn create_token(user_id: String, token_type: TokenType) -> Result<Stri
     Ok(token)
 }
 
-pub fn verify_token(token: String) -> Result<Claims> {
+pub fn verify_token(token: String, token_type: TokenType) -> Result<Claims> {
     // read public key from file
-    let public_key = std::fs::read_to_string("./keys/public_key.pem")
+    let public_key_path = match token_type {
+        TokenType::AccessToken => "./keys/access_public_key.pem",
+        TokenType::RefreshToken => "./keys/refresh_public_key.pem",
+    };
+    let public_key = std::fs::read_to_string(public_key_path)
         .map_err(|_| ApiErrResp::internal_server_error(format!("cannot find public_key.pem")))?;
     let token = decode::<Claims>(
         &token,
