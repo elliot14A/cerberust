@@ -19,3 +19,5 @@ Cargo.lock
 /target
 /volumes
 migrations
+.dockerignore
+private_keys
