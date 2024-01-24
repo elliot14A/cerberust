@@ -4,6 +4,7 @@ use axum::{Extension, Router};
 use hyper::Method;
 use repositories::DatabaseRepository;
 use tokio::net::TcpListener;
+use tower_cookies::CookieManagerLayer;
 
 #[cfg(feature = "surrealdb")]
 use surrealdb_driver::SurrealDriver as DatabaseDriver;
@@ -40,6 +41,7 @@ pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
     info!("🚀 Conntected to SMTP Server");
 
     let app = app
+        .layer(CookieManagerLayer::new())
         .layer(Extension(Arc::new(database_repositoy)))
         .layer(Extension(Arc::new(smtp)));
 

@@ -1,17 +1,16 @@
 use std::sync::Arc;
 
 use crate::{error::Result, utils::response::to_response};
+use crate::{
+    extractors::FromValidatedJson,
+    utils::{hash::hash_password, smtp::SmtpService},
+};
 use axum::{response::IntoResponse, Extension, Json};
 use hyper::StatusCode;
 use repositories::{
     token::CreateTokenInput,
     user::{CreateUserInput, User},
     DatabaseRepository,
-};
-
-use crate::{
-    extractors::FromValidatedJson,
-    utils::{hash::hash, smtp::SmtpService},
 };
 
 pub async fn register<H>(
@@ -28,7 +27,7 @@ where
         password,
     } = input;
     // TODO: implement faster hash function
-    let password = hash(password).await?;
+    let password = hash_password(password).await?;
     let user = db
         .create_user(CreateUserInput {
             name,

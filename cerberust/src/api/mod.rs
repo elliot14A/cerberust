@@ -1,4 +1,5 @@
 mod forgot;
+mod login;
 mod register;
 mod resend;
 mod verify;
@@ -14,6 +15,7 @@ use serde::Deserialize;
 
 use self::{
     forgot::{forgot_password_send_email, reset_password},
+    login::login,
     resend::resend_verification_email,
     verify::verify,
 };
@@ -27,6 +29,7 @@ pub fn init_routes<H: DatabaseRepository>() -> Router {
         .route("/verify/:token", post(verify::<H>))
         .route("/forgot_password", post(forgot_password_send_email::<H>))
         .route("/reset_password/:token", post(reset_password::<H>))
+        .route("/login", post(login::<H>))
 }
 
 #[derive(Debug, Deserialize)]

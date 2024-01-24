@@ -148,7 +148,7 @@ impl SmtpService {
             );
             self.send_email_with_retries(html, subject, to, retries + 1)?;
         }
-        info!("Successfully sent verification email");
+        info!("Successfully sent email");
         Ok(())
     }
 }

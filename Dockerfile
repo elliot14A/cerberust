@@ -1,7 +1,6 @@
 # Build stage
 FROM lukemathwalker/cargo-chef:latest AS chef
 WORKDIR /app
-
 # Planner stage
 FROM chef AS planner
 COPY . .
@@ -12,11 +11,15 @@ FROM chef AS builder
 COPY --from=planner /app/recipe.json recipe.json
 RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
+# Move the files to the root of the project
 RUN cargo build --release
 
 # Runtime stage
 FROM debian:bookworm-slim AS runtime
-WORKDIR /app
 RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/cerberust /usr/local/bin/
-ENTRYPOINT ["/usr/local/bin/cerberust"]
+WORKDIR /app
+COPY --from=builder /app/target/release/cerberust .
+COPY ./surrealdb-driver/schemas /app/schemas
+COPY ./surrealdb-driver/events /app/events
+COPY ./surrealdb-driver/.surrealdb /app
+ENTRYPOINT ["/app/cerberust"]

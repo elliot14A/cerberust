@@ -6,8 +6,6 @@ DEFINE FIELD password ON user TYPE string;
 DEFINE FIELD email_verified ON user TYPE bool DEFAULT false;
 DEFINE FIELD created_at ON user TYPE datetime DEFAULT time::now();
 DEFINE FIELD updated_at ON user TYPE datetime DEFAULT time::now() VALUE time::now();
-DEFINE FIELD accounts ON user TYPE array<record<account>> DEFAULT [];
-DEFINE FIELD accounts.* ON user TYPE record<account>;
 
 DEFINE INDEX unique_username ON user COLUMNS username UNIQUE;
 DEFINE INDEX unique_email ON user COLUMNS email UNIQUE;

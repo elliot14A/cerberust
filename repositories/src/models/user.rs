@@ -2,8 +2,6 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 
-use super::account::Account;
-
 /// `CreateUser` represents the data needed to create a new user.
 #[derive(Debug, Deserialize, Validate)]
 pub struct CreateUserInput {
@@ -41,7 +39,6 @@ pub struct User {
     pub email_verified: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
-    pub accounts: Vec<Account>,
 }
 
 /// `UserWhereInput` represents the data needed to query for a user.

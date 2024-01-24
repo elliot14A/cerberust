@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     error::{ApiErrResp, Result},
-    utils::{hash::hash, response::to_response, smtp::SmtpService},
+    utils::{hash::hash_password, response::to_response, smtp::SmtpService},
 };
 use axum::{extract::Path, response::IntoResponse, Extension, Json};
 use repositories::{
@@ -64,7 +64,7 @@ pub async fn reset_password<H: DatabaseRepository>(
     }
 
     // make hashing password async since it's cpu intensive
-    let new_password = hash(new_password).await.unwrap();
+    let new_password = hash_password(new_password).await.unwrap();
 
     let user = ctx
         .update_user(UpdateUserInput {
