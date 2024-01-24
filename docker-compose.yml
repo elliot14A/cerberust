@@ -28,16 +28,11 @@ services:
       - SURREALDB_URL=surrealdb:8000
       - SURREALDB_NS=auth
       - SURREALDB_DB=auth
-      - PRIVATE_KEY="./keys/private_key.pem"
-      - PUBLIC_KEY="./keys/public_key.pem"
-      # 15 minutes
-      - ACCESS_TOKEN_EXPIRATION=900
-      # 1 day
-      - REFRESH_TOKEN_EXPIRATION=86400
     ports:
       - "8080:8080"
     depends_on:
       - surrealdb
+      - mailhog
     volumes:
       - ./keys:/app/keys
     develop:
