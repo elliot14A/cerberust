@@ -27,11 +27,8 @@ pub async fn create(input: CreateTokenInput) -> Result<Token> {
         .bind(("s_token", token))
         .bind(("token_type", token_type))
         .await
-        .map_err(|e| {
-            println!("{:?}", e);
-            Error::InternalError {
-                message: e.to_string(),
-            }
+        .map_err(|e| Error::InternalError {
+            message: e.to_string(),
         })?;
     let token: Option<Token> = response
         .take::<Option<SurrealToken>>(0)

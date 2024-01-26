@@ -23,7 +23,7 @@ fn smtp_service() -> SmtpTransport {
         .build();
     let s = smtp.test_connection();
     if s.is_err() {
-        println!("error : {:?}", s.err());
+        error!("error : {:?}", s.err());
         panic!("Failed to connect to SMTP server");
     }
     smtp

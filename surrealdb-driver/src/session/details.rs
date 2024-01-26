@@ -11,11 +11,8 @@ pub async fn details(id: String) -> Result<Session> {
         .query(surql)
         .bind(("s_id", id))
         .await
-        .map_err(|e| {
-            println!("{:?}", e);
-            Error::InternalError {
-                message: e.to_string(),
-            }
+        .map_err(|e| Error::InternalError {
+            message: e.to_string(),
         })?;
     let token: Option<Session> = response
         .take::<Option<SurrealSession>>(0)

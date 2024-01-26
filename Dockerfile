@@ -19,7 +19,4 @@ FROM debian:bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=builder /app/target/release/cerberust .
-COPY ./surrealdb-driver/schemas /app/schemas
-COPY ./surrealdb-driver/events /app/events
-COPY ./surrealdb-driver/.surrealdb /app
 ENTRYPOINT ["/app/cerberust"]

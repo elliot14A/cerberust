@@ -24,7 +24,6 @@ use surrealdb::{
     engine::remote::http::{Client, Http},
     Surreal,
 };
-use surrealdb_migrations::MigrationRunner;
 use user::{create::create, details::get_user, update::update};
 
 pub(crate) static DB: Lazy<Surreal<Client>> = Lazy::new(Surreal::init);
@@ -81,12 +80,6 @@ impl SurrealDriver {
             .map_err(|e| Error::InternalError {
                 message: format!("Unable to connect to surrealdb: {}", e.to_string()),
             })?;
-        // run migrations
-        MigrationRunner::new(&DB)
-            .up()
-            .await
-            .expect("Unable to run migrations");
-
         Ok(())
     }
 }
@@ -148,6 +141,9 @@ impl SessionRepository for SurrealDriver {
 
     async fn find_session(&self, id: String) -> Result<Session> {
         session::details::details(id).await
+    }
+    async fn add_refresh_token(&self, id: String, token: String) -> Result<()> {
+        session::update::add_refresh_token(id, token).await
     }
 }
 

@@ -63,4 +63,5 @@ pub trait SessionRepository {
     async fn create_session(&self, input: CreateSessionInput) -> Result<Session>;
     async fn invalidate_session(&self, session_id: String) -> Result<()>;
     async fn find_session(&self, session_id: String) -> Result<Session>;
+    async fn add_refresh_token(&self, session_id: String, token: String) -> Result<()>;
 }

@@ -6,6 +6,7 @@ use time::OffsetDateTime;
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Claims {
     pub user_id: String,
+    pub session_id: String,
     #[serde(with = "jwt_numeric_date")]
     iat: OffsetDateTime,
     #[serde(with = "jwt_numeric_date")]
@@ -13,7 +14,12 @@ pub struct Claims {
 }
 
 impl Claims {
-    pub fn new(user_id: String, iat: OffsetDateTime, exp: OffsetDateTime) -> Self {
+    pub fn new(
+        user_id: String,
+        session_id: String,
+        iat: OffsetDateTime,
+        exp: OffsetDateTime,
+    ) -> Self {
         let iat = iat
             .date()
             .with_hms_milli(iat.hour(), iat.minute(), iat.second(), 0)
@@ -25,7 +31,12 @@ impl Claims {
             .unwrap()
             .assume_utc();
 
-        Self { user_id, iat, exp }
+        Self {
+            user_id,
+            iat,
+            exp,
+            session_id,
+        }
     }
 }
 
@@ -55,7 +66,11 @@ pub enum TokenType {
     RefreshToken,
 }
 
-pub async fn create_token(user_id: String, token_type: TokenType) -> Result<String> {
+pub async fn create_token(
+    user_id: String,
+    session_id: String,
+    token_type: TokenType,
+) -> Result<String> {
     // set iat to now
     let iat = OffsetDateTime::now_utc();
     // get expiration from env for access and refresh tokens
@@ -73,7 +88,7 @@ pub async fn create_token(user_id: String, token_type: TokenType) -> Result<Stri
         TokenType::RefreshToken => iat + time::Duration::days(refresh_exp),
     };
     // create claims
-    let claims = Claims::new(user_id, iat, exp);
+    let claims = Claims::new(user_id, session_id, iat, exp);
     let header = Header::new(Algorithm::RS512);
     // read private key from file
     let private_key_path = match token_type {
