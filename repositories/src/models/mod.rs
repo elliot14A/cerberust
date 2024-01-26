@@ -1,6 +1,8 @@
 pub mod account;
 pub mod token;
 pub mod user;
+pub mod refresh_token;
+pub mod session;
 
 use account::CreateAccountInput;
 
