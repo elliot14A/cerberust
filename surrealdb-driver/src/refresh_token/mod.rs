@@ -1,4 +1,4 @@
-use repositories::token::Token;
+use repositories::refresh_token::RefreshToken;
 use serde::Deserialize;
 use surrealdb::{opt::RecordId, sql::Datetime};
 
@@ -7,21 +7,19 @@ pub mod delete;
 pub mod details;
 
 #[derive(Deserialize)]
-struct SurrealToken {
+pub(crate) struct SurrealRefreshToken {
     pub id: RecordId,
-    pub user: RecordId,
+    pub session: RecordId,
     pub token: String,
-    pub token_type: String,
     pub created_at: Datetime,
 }
 
-impl From<SurrealToken> for Token {
-    fn from(value: SurrealToken) -> Self {
+impl From<SurrealRefreshToken> for RefreshToken {
+    fn from(value: SurrealRefreshToken) -> Self {
         Self {
             id: value.id.id.to_string(),
-            user_id: value.user.id.to_string(),
+            session_id: value.session.id.to_string(),
             token: value.token,
-            token_type: value.token_type,
             created_at: value.created_at.into(),
         }
     }

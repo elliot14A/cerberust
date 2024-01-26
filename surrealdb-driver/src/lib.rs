@@ -1,15 +1,20 @@
 #![allow(dead_code)]
-pub(crate) mod account;
+pub mod account;
+pub mod refresh_token;
+pub mod session;
 mod token;
-pub(crate) mod user;
+pub mod user;
 
 use async_trait::async_trait;
 use once_cell::sync::Lazy;
 use repositories::{
     account::Account,
+    refresh_token::{RefreshToken, RefreshTokenCreateInput, RefreshTokenWhereInput},
+    session::{CreateSessionInput, Session},
     token::{CreateTokenInput, Token, TokenWhereInput},
     user::{CreateUserInput, User},
-    AccountRepository, DatabaseRepository, Error, Result, TokenRepository, UserRepository,
+    AccountRepository, DatabaseRepository, Error, RefreshTokenRepository, Result,
+    SessionRepository, TokenRepository, UserRepository,
 };
 use repositories::{
     account::{AccountWhereInput, CreateAccountInput},
@@ -118,6 +123,34 @@ impl TokenRepository for SurrealDriver {
         Ok(token::details::get_token(token).await?)
     }
 }
+#[async_trait]
+impl RefreshTokenRepository for SurrealDriver {
+    async fn create_refresh_token(&self, input: RefreshTokenCreateInput) -> Result<RefreshToken> {
+        refresh_token::create::create(input).await
+    }
+    async fn delete_refresh_token(&self, input: RefreshTokenWhereInput) -> Result<()> {
+        refresh_token::delete::delete_refresh_token(input).await
+    }
+
+    async fn find_refresh_token(&self, token: String) -> Result<RefreshToken> {
+        refresh_token::details::get_refresh_token(token).await
+    }
+}
+
+#[async_trait]
+impl SessionRepository for SurrealDriver {
+    async fn create_session(&self, input: CreateSessionInput) -> Result<Session> {
+        session::create::create(input).await
+    }
+    async fn invalidate_session(&self, id: String) -> Result<()> {
+        session::update::invalidate_session(id).await
+    }
+
+    async fn find_session(&self, id: String) -> Result<Session> {
+        session::details::details(id).await
+    }
+}
+
 /// Builds the query string for the given parameters.
 /// params is a vector of tuples of the form (key, value).
 /// key is the name of the field and value is the value of the field.

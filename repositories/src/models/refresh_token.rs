@@ -11,9 +11,10 @@ pub struct RefreshToken {
 
 pub struct RefreshTokenCreateInput {
     pub session_id: String,
+    pub token: String,
 }
 
 pub struct RefreshTokenWhereInput {
-    pub id: String,
-    pub session_id: String,
+    pub id: Option<String>,
+    pub session_id: Option<String>,
 }
