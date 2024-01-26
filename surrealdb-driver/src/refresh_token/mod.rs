@@ -5,6 +5,7 @@ use surrealdb::{opt::RecordId, sql::Datetime};
 pub mod create;
 pub mod delete;
 pub mod details;
+pub mod list;
 
 #[derive(Deserialize)]
 pub(crate) struct SurrealRefreshToken {

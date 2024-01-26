@@ -128,6 +128,10 @@ impl RefreshTokenRepository for SurrealDriver {
     async fn find_refresh_token(&self, token: String) -> Result<RefreshToken> {
         refresh_token::details::get_refresh_token(token).await
     }
+
+    async fn list_refresh_tokens(&self, session_id: String) -> Result<Vec<RefreshToken>> {
+        refresh_token::list::list(session_id).await
+    }
 }
 
 #[async_trait]
@@ -139,11 +143,8 @@ impl SessionRepository for SurrealDriver {
         session::update::invalidate_session(id).await
     }
 
-    async fn find_session(&self, id: String) -> Result<Session> {
-        session::details::details(id).await
-    }
-    async fn add_refresh_token(&self, id: String, token: String) -> Result<()> {
-        session::update::add_refresh_token(id, token).await
+    async fn find_session(&self, id: String, user_id: String) -> Result<Session> {
+        session::details::details(id, user_id).await
     }
 }
 

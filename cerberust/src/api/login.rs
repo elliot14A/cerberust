@@ -57,20 +57,18 @@ pub async fn login<H: DatabaseRepository>(
     //     token_type: "refresh_token".to_string(),
     // })
     // .await?;
-    let mut cookie = Cookie::new("refresh_token", refresh_token.clone());
+    let mut cookie = Cookie::new("cerberust_session_cookie", refresh_token.clone());
     // cookie.set_secure(true);
     cookie.set_http_only(true);
     cookie.set_same_site(SameSite::Strict);
     cookies.add(cookie);
 
-    let refresh_token = ctx
-        .create_refresh_token(RefreshTokenCreateInput {
-            session_id: session.id.clone(),
-            token: refresh_token.clone(),
-        })
-        .await?;
+    ctx.create_refresh_token(RefreshTokenCreateInput {
+        session_id: session.id.clone(),
+        token: refresh_token.clone(),
+    })
+    .await?;
 
-    ctx.add_refresh_token(session.id, refresh_token.id).await?;
     let json = json!({
         "access_token": access_token,
     });

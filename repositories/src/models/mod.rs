@@ -56,12 +56,12 @@ pub trait RefreshTokenRepository {
     async fn delete_refresh_token(&self, input: RefreshTokenWhereInput) -> Result<()>;
     async fn find_refresh_token(&self, token: String) -> Result<RefreshToken>;
     async fn create_refresh_token(&self, input: RefreshTokenCreateInput) -> Result<RefreshToken>;
+    async fn list_refresh_tokens(&self, session_id: String) -> Result<Vec<RefreshToken>>;
 }
 
 #[async_trait::async_trait]
 pub trait SessionRepository {
     async fn create_session(&self, input: CreateSessionInput) -> Result<Session>;
     async fn invalidate_session(&self, session_id: String) -> Result<()>;
-    async fn find_session(&self, session_id: String) -> Result<Session>;
-    async fn add_refresh_token(&self, session_id: String, token: String) -> Result<()>;
+    async fn find_session(&self, session_id: String, user_id: String) -> Result<Session>;
 }

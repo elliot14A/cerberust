@@ -17,4 +17,5 @@ pub struct RefreshTokenCreateInput {
 pub struct RefreshTokenWhereInput {
     pub id: Option<String>,
     pub session_id: Option<String>,
+    pub token: Option<String>,
 }
