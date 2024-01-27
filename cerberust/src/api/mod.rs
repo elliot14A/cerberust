@@ -5,6 +5,7 @@ mod refresh;
 mod register;
 mod resend;
 mod verify;
+pub mod whoami;
 
 use axum::{
     response::IntoResponse,
@@ -22,6 +23,7 @@ use self::{
     refresh::refesh,
     resend::resend_verification_email,
     verify::verify,
+    whoami::whoami,
 };
 
 pub fn init_routes<H: DatabaseRepository>() -> Router {
@@ -35,6 +37,7 @@ pub fn init_routes<H: DatabaseRepository>() -> Router {
         .route("/login", post(login::<H>))
         .route("/logout", post(logout::<H>))
         .route("/refresh", post(refesh::<H>))
+        .route("/whoami", post(whoami::<H>))
 }
 
 #[derive(Debug, Deserialize)]
