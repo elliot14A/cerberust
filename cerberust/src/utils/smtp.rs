@@ -1,8 +1,10 @@
+// use chrono::Duration;
 use lettre::{
     message::{header::ContentType, MultiPart, SinglePart},
     transport::smtp::{authentication::Credentials, client::Tls},
     SmtpTransport, Transport,
 };
+// use tokio::time;
 use tracing::{error, info};
 
 use crate::error::ApiErrResp;
@@ -146,6 +148,8 @@ impl SmtpService {
                 "Retrying to send verification email for the {} time",
                 retries
             );
+            // sleep for 5 seconds before retrying
+            // time::sleep(Duration::seconds(5).to_std().unwrap()).await;
             self.send_email_with_retries(html, subject, to, retries + 1)?;
         }
         info!("Successfully sent email");

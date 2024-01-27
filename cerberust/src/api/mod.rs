@@ -37,7 +37,7 @@ pub fn init_routes<H: DatabaseRepository>() -> Router {
         .route("/login", post(login::<H>))
         .route("/logout", post(logout::<H>))
         .route("/refresh", post(refesh::<H>))
-        .route("/whoami", post(whoami::<H>))
+        .route("/whoami", get(whoami::<H>).post(whoami::<H>))
 }
 
 #[derive(Debug, Deserialize)]
