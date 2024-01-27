@@ -5,12 +5,9 @@
 Cerberust is a formidable authentication server written in Rust, designed to be the vigilant guardian of your application's security. Built with a focus on speed and advanced security measures, Cerberust ensures a seamless and protected authentication experience. Leveraging JSON Web Tokens (JWT) for authentication, this server provides a reliable and efficient solution for user authentication. 
 
 ### Tech Stack
-- Written in Rust for high-performance and reliability
-- Uses Axum web application framework
-- Implements secure authentication measures with JWTs
-- Supports SurrealDB as a fast and efficient multi-model database.
-- PostgreSQL database support is in active development
-- Incorporates advanced security features such as refresh token rotation and reuse detection
+- Rust Axum
+- SurrealDB
+- Postgres
 
 ### Features
 - __Fast Authentication 🚀__: Built with a focus on speed, Cerberust provides rapid and efficient user authentication.
