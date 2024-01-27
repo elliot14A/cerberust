@@ -6,7 +6,7 @@ use axum::Extension;
 use hyper::StatusCode;
 use repositories::refresh_token::RefreshTokenWhereInput;
 use repositories::DatabaseRepository;
-use tower_cookies::Cookies;
+use tower_cookies::{Cookie, Cookies};
 
 use crate::utils::jwt::Claims;
 
@@ -20,16 +20,18 @@ pub async fn logout<H: DatabaseRepository>(
         session_id,
         ..
     } = claims;
-    let mut cookie = cookies
+    let cookie = cookies
         .get("cerberust_session_cookie")
         .ok_or(ApiErrResp::unauthorized(Some("unauthorized".to_string())))?;
-    cookie.make_removal();
-    let cookie = cookie.to_string();
+
     let session = ctx.find_session(session_id.clone(), user_id).await?;
     if !session.valid {
         return Err(ApiErrResp::unauthorized(Some("unauthorized".to_string())));
     }
+
+    let cookie = cookie.to_string();
     let refresh_token = cookie.split("=").nth(1).map(|s| s.to_string());
+    cookies.remove(Cookie::new("cerberust_session_cookie", ""));
 
     ctx.delete_refresh_token(RefreshTokenWhereInput {
         id: None,

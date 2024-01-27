@@ -1,6 +1,7 @@
 mod forgot;
 mod login;
 mod logout;
+mod refresh;
 mod register;
 mod resend;
 mod verify;
@@ -18,6 +19,7 @@ use self::{
     forgot::{forgot_password_send_email, reset_password},
     login::login,
     logout::logout,
+    refresh::refesh,
     resend::resend_verification_email,
     verify::verify,
 };
@@ -27,12 +29,12 @@ pub fn init_routes<H: DatabaseRepository>() -> Router {
         .route("/health", get(health))
         .route("/resend", post(resend_verification_email::<H>))
         .route("/register", post(register::<H>))
-        .route("/verify/:token", get(verify::<H>))
-        .route("/verify/:token", post(verify::<H>))
+        .route("/verify/:token", get(verify::<H>).post(verify::<H>))
         .route("/forgot_password", post(forgot_password_send_email::<H>))
         .route("/reset_password/:token", post(reset_password::<H>))
         .route("/login", post(login::<H>))
         .route("/logout", post(logout::<H>))
+        .route("/refresh", post(refesh::<H>))
 }
 
 #[derive(Debug, Deserialize)]
