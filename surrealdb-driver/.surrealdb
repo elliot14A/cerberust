@@ -1,6 +1,0 @@
-[db]
-    address = "http://localhost:8000"
-    username = "auth"
-    password = "auth"
-    ns = "auth"
-    db = "auth"
