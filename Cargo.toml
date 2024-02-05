@@ -27,3 +27,5 @@ uuid = "1.7"
 chrono = "0.4"
 tower-cookies = "0.10"
 jsonwebtoken = { version = "9", features = ["use_pem"] }
+diesel = "2.1.4"
+diesel-async = { version = "0.4", features = ["postgres", "deadpool"] }

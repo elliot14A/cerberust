@@ -1,9 +1,10 @@
 #![allow(dead_code)]
-
+mod actions;
 mod api;
 mod error;
 mod extractors;
 mod logger;
+mod schema;
 mod server;
 mod utils;
 

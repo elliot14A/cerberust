@@ -1,14 +1,19 @@
 version: '3'
 
 services:
-  surrealdb:
-    image: surrealdb/surrealdb:latest
-    restart: always
-    command: start --user auth --pass auth file:/surrealdb
+  postgres:
+    image: postgres:11.7-alpine
     ports:
-      - 8000:8000
+      - "5432:5432"
     volumes:
-      - ./volumes/surrealdb:/surrealdb
+      - ./volumes/postgresql:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      interval: 10s
+      retries: 10
+      timeout: 2s
     networks:
       - cerberust
 
@@ -24,17 +29,12 @@ services:
   cerberust:
     build:
       context: .
-    environment:
-      - SURREALDB_URL=surrealdb:8000
-      - SURREALDB_NS=auth
-      - SURREALDB_DB=auth
     ports:
       - "8080:8080"
     depends_on:
-      - surrealdb
       - mailhog
     volumes:
-      - ./keys:/app/keys
+      - ./volumes/keys:/app/keys
     develop:
       watch:
         - action: rebuild

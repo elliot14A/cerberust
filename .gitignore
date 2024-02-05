@@ -18,6 +18,6 @@ Cargo.lock
 
 /target
 /volumes
-migrations
 .dockerignore
 keys
+.env
