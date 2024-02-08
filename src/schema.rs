@@ -32,7 +32,7 @@ diesel::table! {
     token (id) {
         id -> Uuid,
         user_id -> Uuid,
-        token -> Text,
+        token_text -> Text,
         token_type -> TokenTypeEnum,
     }
 }
@@ -53,9 +53,4 @@ diesel::joinable!(refresh_token -> session (session_id));
 diesel::joinable!(session -> user (user_id));
 diesel::joinable!(token -> user (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    refresh_token,
-    session,
-    token,
-    user,
-);
+diesel::allow_tables_to_appear_in_same_query!(refresh_token, session, token, user,);

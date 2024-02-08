@@ -9,6 +9,6 @@ create type token_type_enum as enum (
 create table "token" (
   id uuid primary key default uuid_generate_v1mc (),
   user_id uuid references "user" (id) not null,
-  token text not null,
+  token_text text not null,
   token_type token_type_enum not null
 );

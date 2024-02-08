@@ -5,7 +5,6 @@ use axum::{
     http,
     response::{IntoResponse, Response},
 };
-use hyper::StatusCode;
 use serde::{Serialize, Serializer};
 
 pub type Result<T> = std::result::Result<T, ApiErrResp>;

@@ -4,6 +4,7 @@ mod api;
 mod error;
 mod extractors;
 mod logger;
+mod models;
 mod schema;
 mod server;
 mod utils;
