@@ -5,6 +5,8 @@ use axum::{
     http,
     response::{IntoResponse, Response},
 };
+
+use diesel::result::Error;
 use serde::{Serialize, Serializer};
 
 pub type Result<T> = std::result::Result<T, ApiErrResp>;
@@ -66,6 +68,25 @@ impl ApiErrResp {
             error: String::from("Internal Server Error"),
             message: message.into(),
         }
+    }
+}
+
+pub fn handle_diesel_error(e: Error) -> ApiErrResp {
+    match e {
+        Error::NotFound => ApiErrResp {
+            code: http::StatusCode::NOT_FOUND,
+            error: "NOT_FOUND".to_string(),
+            message: "Not Found".to_string(),
+        },
+        Error::DatabaseError(e, _e) => match e {
+            diesel::result::DatabaseErrorKind::UniqueViolation => ApiErrResp {
+                code: http::StatusCode::CONFLICT,
+                error: "CONFLICT".to_string(),
+                message: _e.message().to_string(),
+            },
+            _ => ApiErrResp::internal_server_error(_e.message().to_string()),
+        },
+        _ => ApiErrResp::internal_server_error(e.to_string()),
     }
 }
 

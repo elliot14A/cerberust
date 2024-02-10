@@ -42,7 +42,6 @@ impl FromSql<crate::schema::sql_types::TokenTypeEnum, Pg> for TokenType {
 #[derive(Debug, Insertable, Deserialize)]
 #[diesel(table_name = token)]
 pub struct NewToken<'a> {
-    pub id: Uuid,
     pub user_id: Uuid,
     pub token_text: &'a str,
     pub token_type: TokenType,

@@ -1,52 +1,67 @@
 use std::sync::Arc;
 
+use crate::actions::token::create::create_token;
+use crate::actions::user::create::create_user;
+use crate::error::ApiErrResp;
+use crate::models::token::TokenType;
+use crate::models::user::{NewUser, User};
 use crate::{error::Result, utils::response::to_response};
 use crate::{
     extractors::FromValidatedJson,
     utils::{hash::hash_password, smtp::SmtpService},
 };
+use axum::extract::State;
 use axum::{response::IntoResponse, Extension, Json};
+use diesel_async::pooled_connection::bb8::Pool;
+use diesel_async::AsyncPgConnection;
 use hyper::StatusCode;
 
 pub async fn register(
-    // Extension(db): Extension<Arc<H>>,
+    State(pool): State<Arc<Pool<AsyncPgConnection>>>,
     Extension(smtp): Extension<Arc<SmtpService>>,
-    // FromValidatedJson(input): FromValidatedJson<CreateUserInput>,
+    FromValidatedJson(input): FromValidatedJson<NewUser>,
 ) -> Result<impl IntoResponse> {
-    // let CreateUserInput {
-    //     name,
-    //     email,
-    //     password,
-    // } = input;
-    // // TODO: implement faster hash function
-    // let password = hash_password(password).await?;
-    // let user = db
-    //     .create_user(CreateUserInput {
-    //         name,
-    //         email,
-    //         password,
-    //     })
-    //     .await?;
-    // let email = user.email.clone();
-    // let user_id = user.id.clone();
-    // // send verification email
-    // // make sending email async as this might take some time
-    // tokio::spawn(async move {
-    //     let token = uuid::Uuid::new_v4().to_string();
-    //     // ignore the error for now
-    //     db.create_token(CreateTokenInput {
-    //         user_id,
-    //         token: token.clone(),
-    //         token_type: "email_verification".to_string(),
-    //     })
-    //     .await
-    //     .unwrap();
-    //     smtp.send_verification_email(email, token).unwrap();
-    // });
-    // let response = to_response::<User>(
-    //     "Your email is registered, please verify it now".to_owned(),
-    //     user,
-    // );
-    // Ok((StatusCode::CREATED, Json(response)))
-    Ok(())
+    let NewUser {
+        username,
+        email,
+        password,
+    } = input;
+    // TODO: implement faster hash function
+    let password = hash_password(password).await?;
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|e| ApiErrResp::internal_server_error(e.to_string()))?;
+    let user = create_user(
+        &mut conn,
+        NewUser {
+            username,
+            email,
+            password,
+        },
+    )
+    .await?;
+    let email = user.email.clone();
+    let user_id = user.id.clone();
+    let token = uuid::Uuid::new_v4().to_string();
+    create_token(
+        &mut conn,
+        crate::models::token::NewToken {
+            user_id,
+            token_text: &token,
+            token_type: TokenType::VerifyEmail,
+        },
+    )
+    .await
+    .unwrap();
+    // send verification email
+    // make sending email async as this might take some time
+    tokio::spawn(async move {
+        smtp.send_verification_email(email, token).unwrap();
+    });
+    let response = to_response::<User>(
+        "Your email is registered, please verify it now".to_owned(),
+        user,
+    );
+    Ok((StatusCode::CREATED, Json(response)))
 }

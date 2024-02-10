@@ -7,13 +7,17 @@ mod resend;
 mod verify;
 pub mod whoami;
 
+use std::sync::Arc;
+
 use axum::{
     response::IntoResponse,
     routing::{get, post},
     Router,
 };
+use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
 use register::register;
 use serde::Deserialize;
+use validator::Validate;
 
 use self::{
     forgot::{forgot_password_send_email, reset_password},
@@ -25,7 +29,7 @@ use self::{
     whoami::whoami,
 };
 
-pub fn init_routes() -> Router {
+pub fn init_routes(pool: Pool<AsyncPgConnection>) -> Router {
     Router::new()
         .route("/health", get(health))
         .route("/resend", post(resend_verification_email))
@@ -37,10 +41,12 @@ pub fn init_routes() -> Router {
         .route("/logout", post(logout))
         .route("/refresh", post(refesh))
         .route("/whoami", get(whoami).post(whoami))
+        .with_state(Arc::new(pool))
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Validate)]
 pub struct VerifyOrResetRequestBody {
+    #[validate(email)]
     email: String,
 }
 

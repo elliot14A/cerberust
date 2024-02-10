@@ -8,13 +8,13 @@ use validator::Validate;
 
 #[derive(Debug, Insertable, Validate, Deserialize)]
 #[diesel(table_name = user)]
-pub struct NewUser<'a> {
+pub struct NewUser {
     #[validate(length(min = 3, max = 24))]
-    pub username: &'a str,
+    pub username: String,
     #[validate(email)]
-    pub email: &'a str,
+    pub email: String,
     #[validate(length(min = 8))]
-    pub password: &'a str,
+    pub password: String,
 }
 
 #[derive(Debug, Queryable, Selectable, Serialize)]

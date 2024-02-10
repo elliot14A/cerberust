@@ -10,7 +10,7 @@ use tracing::{error, info};
 use crate::error::ApiErrResp;
 
 fn smtp_service() -> SmtpTransport {
-    let smtp_host = std::env::var("SMTP_HOST").unwrap_or("mailhog".to_string());
+    let smtp_host = std::env::var("SMTP_HOST").unwrap_or("0.0.0.0".to_string());
     let smtp_user = std::env::var("SMTP_USER").unwrap_or("".to_string());
     let smtp_pass = std::env::var("SMTP_PASS").unwrap_or("".to_string());
     let smtp_port = std::env::var("SMTP_PORT").unwrap_or("1025".to_string());

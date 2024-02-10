@@ -1,13 +1,19 @@
-use argon2::{password_hash::Salt, Argon2, PasswordHash};
+use argon2::{
+    password_hash::{rand_core::OsRng, SaltString},
+    Argon2, PasswordHash,
+};
 
 use crate::error::{ApiErrResp, Result};
 
 pub async fn hash_password(password: String) -> Result<String> {
     Ok(tokio::task::spawn_blocking(move || -> Result<String> {
-        let salt = Salt::from_b64("").unwrap();
-        Ok(PasswordHash::generate(Argon2::default(), password, salt)
-            .map_err(|e| ApiErrResp::internal_server_error(e.to_string()))?
-            .to_string())
+        // TODO: use a real salt
+        let salt_string = SaltString::generate(&mut OsRng);
+        Ok(
+            PasswordHash::generate(Argon2::default(), password, &salt_string)
+                .map_err(|e| ApiErrResp::internal_server_error(e.to_string()))?
+                .to_string(),
+        )
     })
     .await
     .map_err(|e| ApiErrResp::internal_server_error(e.to_string()))??)

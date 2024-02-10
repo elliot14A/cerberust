@@ -122,9 +122,7 @@ pub fn verify_token(token: String, token_type: TokenType) -> Result<Claims> {
         &DecodingKey::from_rsa_pem(public_key.as_bytes()).unwrap(),
         &Validation::new(Algorithm::RS512),
     )
-    .map_err(|e| {
-        return ApiErrResp::unauthorized(Some(e.to_string()));
-    })?;
+    .map_err(|e| ApiErrResp::unauthorized(Some(e.to_string())))?;
     Ok(token.claims)
 }
 

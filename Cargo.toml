@@ -23,9 +23,9 @@ argon2 = "0.5"
 time = "0.3"
 lettre = "0.11"
 axum-macros = "0.4"
-uuid = { version = "1.7", features = ["serde"] }
+uuid = { version = "1.7", features = ["serde", "v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 tower-cookies = "0.10"
 jsonwebtoken = { version = "9", features = ["use_pem"] }
 diesel = { version = "2.1.4", features = ["uuid", "chrono"] }
-diesel-async = { version = "0.4", features = ["postgres", "deadpool"] }
+diesel-async = { version = "0.4", features = ["postgres", "bb8"] }
