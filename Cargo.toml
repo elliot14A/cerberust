@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 async-trait = "0.1"
-tokio = { version = "1.35", features = ["full"] }
+tokio = { version = "1.36", features = ["full"] }
 axum = { version = "0.7", features = ["default"] }
 anyhow = "1"
 serde = { version = "1", features = ["derive"] }
@@ -23,8 +23,8 @@ argon2 = "0.5"
 time = "0.3"
 lettre = "0.11"
 axum-macros = "0.4"
-uuid = "1.7"
-chrono = "0.4"
+uuid = { version = "1.7", features = ["serde"] }
+chrono = { version = "0.4", features = ["serde"] }
 tower-cookies = "0.10"
 jsonwebtoken = { version = "9", features = ["use_pem"] }
 diesel = { version = "2.1.4", features = ["uuid", "chrono"] }
