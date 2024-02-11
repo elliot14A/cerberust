@@ -21,18 +21,20 @@ use serde_json::Value;
 use tower_cookies::{cookie::SameSite, Cookie, Cookies};
 use uuid::Uuid;
 
-pub async fn refesh(
+pub async fn refresh(
     cookies: Cookies,
     State(pool): State<Arc<Pool<AsyncPgConnection>>>,
 ) -> Result<impl IntoResponse> {
     let cookie = cookies
         .get("cerberust_session_cookie")
-        .ok_or(ApiErrResp::unauthorized(Some("unauthorized".to_string())))?
+        .ok_or(ApiErrResp::unauthorized(Some(
+            "cookie not found".to_string(),
+        )))?
         .to_string();
     //
     let refresh_token = cookie.split("=").nth(1).map(|s| s.to_string());
     if refresh_token.is_none() {
-        return Err(ApiErrResp::unauthorized(Some("unauthorized".to_string())));
+        return Err(ApiErrResp::unauthorized(Some("invalid cookie".to_string())));
     }
     let refresh_token = refresh_token.unwrap();
     // // verify refresh token
@@ -53,11 +55,13 @@ pub async fn refesh(
         .map_err(|_| ApiErrResp::internal_server_error("invalid user_id".to_string()))?;
     let session = get_session_by_id(&mut conn, session_id, Some(user_id))
         .await?
-        .ok_or_else(|| ApiErrResp::unauthorized(Some("unauthorized".to_string())))?;
+        .ok_or_else(|| ApiErrResp::unauthorized(Some("session not found".to_string())))?;
 
     // check if session is valid
     if !session.valid {
-        return Err(ApiErrResp::unauthorized(Some("unauthorized".to_string())));
+        return Err(ApiErrResp::unauthorized(Some(
+            "invalid session".to_string(),
+        )));
     }
 
     cookies.remove(Cookie::new("cerberust_session_cookie", ""));
@@ -72,7 +76,9 @@ pub async fn refesh(
     if refresh_token.is_none() {
         invalidate_session(&mut conn, session_id).await?;
         delete_refresh_token_by_token(&mut conn, &refresh_token_string).await?;
-        return Err(ApiErrResp::unauthorized(Some("unauthorized".to_string())));
+        return Err(ApiErrResp::unauthorized(Some(
+            "refresh token reuse".to_string(),
+        )));
     }
 
     let refresh_token = refresh_token.unwrap();

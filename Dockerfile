@@ -17,5 +17,6 @@ RUN cargo build --release
 # Runtime stage
 FROM debian:bookworm-slim AS runtime
 RUN apt-get update && apt-get install -y libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/cerberust /usr/bin
-ENTRYPOINT ["cerberust"]
+WORKDIR /app
+COPY --from=builder /app/target/release/cerberust /app
+ENTRYPOINT ["/app/cerberust"]

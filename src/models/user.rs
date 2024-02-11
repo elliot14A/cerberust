@@ -26,6 +26,7 @@ pub struct User {
     pub email: String,
     #[serde(skip_serializing)]
     pub password: String,
+    #[serde(skip_serializing)]
     pub email_verified: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: Option<DateTime<Utc>>,

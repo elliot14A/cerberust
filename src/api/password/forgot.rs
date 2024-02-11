@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     actions::token::create::create_token,
+    api::VerifyOrResetRequestBody,
     error::{ApiErrResp, Result},
     extractors::FromValidatedJson,
     models::token::{NewToken, TokenType},
@@ -15,8 +16,6 @@ use axum::{
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
 use hyper::StatusCode;
 use validator::Validate;
-
-use super::VerifyOrResetRequestBody;
 
 pub async fn forgot_password_send_email(
     State(pool): State<Arc<Pool<AsyncPgConnection>>>,

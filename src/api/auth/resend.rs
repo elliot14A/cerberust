@@ -10,7 +10,7 @@ use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
 use hyper::StatusCode;
 use std::sync::Arc;
 
-use super::VerifyOrResetRequestBody;
+use crate::api::VerifyOrResetRequestBody;
 
 pub async fn resend_verification_email(
     State(pool): State<Arc<Pool<AsyncPgConnection>>>,

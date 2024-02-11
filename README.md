@@ -22,8 +22,9 @@ Cerberust is a formidable authentication server written in Rust, designed to be 
 
 ### Endpoints
 - GET /api/health - Check Health
-- POST /api/register - register 
-- POST /api/login - login
+### Auth routes `/api/auth`
+- POST /register - register 
+- POST /login - login
 - POST /api/logout - logout
 - POST /api/refresh - refresh access token
 - POST /api/forgot_password - send reset password email

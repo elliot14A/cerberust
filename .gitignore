@@ -18,6 +18,5 @@ Cargo.lock
 
 /target
 /volumes
-.dockerignore
 keys
 .env

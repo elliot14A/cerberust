@@ -1,0 +1,5 @@
+/target
+/volumes/postgresql
+/.git
+/assets
+/migrations

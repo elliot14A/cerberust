@@ -20,14 +20,12 @@ pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
         .allow_origin(tower_http::cors::Any)
         .allow_credentials(false);
 
-    let app = Router::new().layer(cors).layer(logger());
+    let app = Router::new().layer(cors);
 
     // connect to database
     let database_url = std::env::var("DATABASE_URL").unwrap_or(String::from(
         "postgres://postgres:postgres@localhost/cerberust",
     ));
-    // let connection = AsyncPgConnection::establish(&database_url).await?;
-    info!("🚀 Connected to Postgres");
 
     let config =
         AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(&database_url);
@@ -35,11 +33,10 @@ pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
 
     let routes = init_routes(pool);
 
-    let app = app.nest("/api", routes);
+    let app = app.nest("/api", routes).layer(logger());
 
     // build smtp service
     let smtp = crate::utils::smtp::SmtpService::new();
-    info!("🚀 Conntected to SMTP Server");
 
     let app = app
         .layer(CookieManagerLayer::new())

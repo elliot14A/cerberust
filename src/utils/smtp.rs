@@ -54,7 +54,7 @@ impl SmtpService {
 
     pub fn send_password_reset_email(&self, to: String, token: String) -> Result<(), ApiErrResp> {
         let default_host = self.get_host();
-        let forgot_password_link = format!("{}/api/reset_password/{}", default_host, token);
+        let forgot_password_link = format!("{}/api/password/reset/{}", default_host, token);
         let html = format!(
             r#"<!DOCTYPE html>
         <html lang="en">
@@ -83,7 +83,7 @@ impl SmtpService {
 
     pub fn send_verification_email(&self, to: String, token: String) -> Result<(), ApiErrResp> {
         let default_host = self.get_host();
-        let verification_link = format!("{}/api/verify/{}", default_host, token);
+        let verification_link = format!("{}/api/auth/verify/{}", default_host, token);
         let html = format!(
             r#"<!DOCTYPE html>
         <html lang="en">

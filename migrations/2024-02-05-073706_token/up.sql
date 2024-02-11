@@ -8,7 +8,7 @@ create type token_type_enum as enum (
 -- create the 'token' table
 create table "token" (
   id uuid primary key default uuid_generate_v1mc (),
-  user_id uuid references "user" (id) not null,
+  user_id uuid references "user" (id) on delete cascade not null,
   token_text text not null,
   token_type token_type_enum not null,
   created_at timestamptz not null default now ()
