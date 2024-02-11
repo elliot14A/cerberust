@@ -1,4 +1,4 @@
-# Cerberust  🐾
+# Cerberust 🦀
 
 ### About the Project
 
@@ -6,32 +6,34 @@ Cerberust is a formidable authentication server written in Rust, designed to be 
 
 ### Tech Stack
 - Rust Axum
-- SurrealDB
 - Postgres
+- Diesel
 
 ### Features
-- __Fast Authentication 🚀__: Built with a focus on speed, Cerberust provides rapid and efficient user authentication.
-- __Refresh Tokens 🔐__: Implements refresh tokens for enhanced security and extended user sessions.
-- __Refresh Token Rotation 🔄__: Enhances security by rotating refresh tokens, minimizing the risk of unauthorized access.
-- __Refresh Token Reuse Detection 🚫__: Detects and prevents the reuse of refresh tokens, adding an extra layer of protection.
-- __Database Support 🗃️__:
-    a. Currently supports SurrealDB 📊: A fast and efficient graph database.
-    b. PostgreSQL 🐘 support is in active development. 
-- __Email Verification 📧__: Sends verification emails to new users for email confirmation.
-- __Password Reset 🔑__: Allows users to reset their passwords through a secure process.
+- Fast Authentication 🚀: Swift and efficient user authentication.
+- Refresh Tokens 🔐: Enhances security and extends user sessions.
+- Refresh Token Rotation 🔄: Regularly updates refresh tokens for heightened security.
+- Refresh Token Reuse Detection 🚫: Blocks unauthorized reuse of refresh tokens.
+- Database Support 🗃️: Compatible with PostgreSQL 🐘.
+- Email Verification 📧: Sends verification emails for account confirmation.
+- Password Reset 🔑: Securely resets user passwords.
+- ORM Integration 🛠️: Seamless integration with Diesel for database management.
 
 ### Endpoints
 - GET /api/health - Check Health
-### Auth routes `/api/auth`
-- POST /register - register 
-- POST /login - login
-- POST /api/logout - logout
-- POST /api/refresh - refresh access token
-- POST /api/forgot_password - send reset password email
-- POST /api/reset_password/:token - reset password
-- POST /api/resend - resend verification email
-- POST, GET /api/verify/:token - verify email
-- POST, GET /api/whoami - get user info from access token
+- Auth routes `/api/auth`
+    - POST /register - register 
+    - POST /login - login
+    - POST, GET /verify/:token - verify email
+    - POST /api/resend - resend verification email
+- Session routes `/api/session`
+    - POST /refresh - refresh access token
+    - POST /logout - logout
+- Password routes `/api/password`
+    - POST /forgot - send reset password email
+    - POST /reset/:token - reset password
+- User routes `/api/user`
+    - POST, GET /api/whoami - get user info from access token
 
 
 ### Database structure
@@ -51,13 +53,11 @@ __Note: Account entity not yet fully implemented__
 git clone https://github.com/elliot14A/cerberust
 ```
 
-- __Run SurrealDB migrations:__
+- __Run Postgres migrations:__
 	 *this step will be removed in the future versions*
 
 ```shell
-cd cerberust/surrealdb-driver
-cargo install surrealdb-migrations
-surrealdb-migrations apply
+diesel migration run
 ```
 
 - __Run the application with docker-compose:__
@@ -79,11 +79,6 @@ docker compose up
     - [ ]  Facebook
     - [ ]  Twitter
 - [ ] RBAC Feature
-- [ ] PostgresDB Support 
-- [ ] Surrealdb Support
-	- [x] Http Client
-	- [ ] Ws Client
-	- [ ] Embedded
 - [ ] Proper Error Handling and Logging
 - [ ] Docker Image
 
