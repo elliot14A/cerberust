@@ -8,10 +8,9 @@ use crate::{
 };
 
 pub async fn create_user(conn: &mut AsyncPgConnection, new_user: NewUser) -> Result<User> {
-    let user = insert_into(user::table)
+    Ok(insert_into(user::table)
         .values(&new_user)
         .get_result::<User>(conn)
         .await
-        .map_err(handle_diesel_error)?;
-    Ok(user)
+        .map_err(handle_diesel_error)?)
 }

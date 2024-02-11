@@ -1,41 +1,49 @@
 use std::sync::Arc;
 
 use crate::{
+    actions::{
+        token::{delete::delete_user_tokens, details::get_token_by_token},
+        user::update::update_email_verified,
+    },
     error::{ApiErrResp, Result},
+    models::{token::TokenType, user::User},
     utils::response::to_response,
 };
-use axum::{extract::Path, response::IntoResponse, Extension, Json};
-// use repositories::{token::TokenWhereInput, user::UpdateUserInput, DatabaseRepository};
+use axum::{
+    extract::{Path, State},
+    response::IntoResponse,
+    Json,
+};
+use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
 
 pub async fn verify(
-    // Extension(ctx): Extension<Arc<H>>,
+    State(pool): State<Arc<Pool<AsyncPgConnection>>>,
     Path(token): Path<String>,
 ) -> Result<impl IntoResponse> {
-    // let token = ctx.find_token(token.clone()).await?;
-    // // if token is created more than an hour ago, return error
-    // let now = chrono::Utc::now();
-    // if now.signed_duration_since(token.created_at).num_hours() > 1 {
-    //     return Err(ApiErrResp::unauthorized(Some("Token expired".to_string())));
-    // }
-    // let user_id = token.user_id.clone();
-    //
-    // ctx.delete_token(TokenWhereInput {
-    //     id: None,
-    //     user_id: Some(user_id),
-    //     token_type: "email_verification".to_string(),
-    // })
-    // .await?;
-    //
-    // ctx.update_user(UpdateUserInput {
-    //     id: token.user_id,
-    //     email_verified: Some(true),
-    //     name: None,
-    //     email: None,
-    //     password: None,
-    // })
-    // .await?;
-    //
-    // let response = to_response::<Option<String>>("verfied".to_string(), None);
-    // Ok(Json(response))
-    Ok(())
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|e| ApiErrResp::internal_server_error(e.to_string()))?;
+
+    let token = get_token_by_token(&mut conn, token.clone())
+        .await?
+        .map(|token| {
+            // if token is created more than an hour ago, return error
+            let now = chrono::Utc::now();
+            if now.signed_duration_since(token.created_at).num_hours() > 1 {
+                return Err(ApiErrResp::unauthorized(Some("Token expired".to_string())));
+            }
+            return Ok(token);
+        })
+        .ok_or_else(|| ApiErrResp::unauthorized(Some(String::from("Invalid Token"))))??;
+
+    // delete all verify email tokens
+    let user_id = token.user_id.clone();
+    delete_user_tokens(&mut conn, user_id, TokenType::VerifyEmail).await?;
+
+    // update user to verified
+    let user = update_email_verified(&mut conn, user_id).await?;
+
+    let response = to_response::<User>("verfied".to_string(), user);
+    Ok(Json(response))
 }

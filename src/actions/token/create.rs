@@ -9,10 +9,9 @@ pub async fn create_token<'a>(
     conn: &mut AsyncPgConnection,
     new_token: NewToken<'a>,
 ) -> Result<Token> {
-    let token = insert_into(token::table)
+    Ok(insert_into(token::table)
         .values(&new_token)
-        .get_result::<Token>(conn)
+        .get_result(conn)
         .await
-        .map_err(handle_diesel_error)?;
-    Ok(token)
+        .map_err(handle_diesel_error)?)
 }

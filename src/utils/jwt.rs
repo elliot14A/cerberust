@@ -1,6 +1,4 @@
 use crate::error::{ApiErrResp, Result};
-use async_trait::async_trait;
-use axum::{extract::FromRequestParts, http::request::Parts};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
@@ -124,23 +122,4 @@ pub fn verify_token(token: String, token_type: TokenType) -> Result<Claims> {
     )
     .map_err(|e| ApiErrResp::unauthorized(Some(e.to_string())))?;
     Ok(token.claims)
-}
-
-#[async_trait]
-impl<S> FromRequestParts<S> for Claims {
-    type Rejection = ApiErrResp;
-    async fn from_request_parts(
-        parts: &mut Parts,
-        _state: &S,
-    ) -> std::result::Result<Self, Self::Rejection> {
-        let headers = parts.headers.clone();
-        let token = headers
-            .get("Authorization")
-            .and_then(|v| v.to_str().ok())
-            .and_then(|v| v.split_whitespace().nth(1))
-            .ok_or(ApiErrResp::unauthorized(Some("missing token".to_string())))?
-            .to_string();
-        let claims = verify_token(token, TokenType::AccessToken)?;
-        Ok(claims)
-    }
 }
