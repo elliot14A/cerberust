@@ -36,3 +36,14 @@ pub async fn get_all_resources(conn: &mut AsyncPgConnection) -> Result<Vec<Resou
         .await
         .map_err(handle_diesel_error)?)
 }
+
+pub async fn list_user_resources(
+    conn: &mut AsyncPgConnection,
+    user_id: Uuid,
+) -> Result<Vec<Resource>> {
+    Ok(resource::table
+        .filter(resource::created_by_id.eq(user_id))
+        .load(conn)
+        .await
+        .map_err(handle_diesel_error)?)
+}

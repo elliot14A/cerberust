@@ -4,30 +4,22 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
-use crate::schema::resource;
-
-use super::user::User;
+use crate::schema::role;
 
 #[derive(Debug, Insertable, Validate, Deserialize, Clone)]
-#[diesel(table_name = resource)]
-pub struct NewResource {
-    pub parent_resource_id: Option<Uuid>,
+#[diesel(table_name = role)]
+pub struct NewRole {
     #[validate(length(min = 3, max = 24))]
     pub name: String,
     #[validate(length(min = 8))]
     pub description: Option<String>,
-    pub created_by_id: Uuid,
 }
 
-#[derive(Debug, Queryable, Selectable, Associations, Serialize, Clone)]
-#[diesel(table_name = resource)]
+#[derive(Debug, Queryable, Selectable, Serialize, Clone)]
+#[diesel(table_name = role)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-#[diesel(belongs_to(User, foreign_key = created_by_id))]
-#[diesel(belongs_to(Resource, foreign_key = parent_resource_id))]
-pub struct Resource {
+pub struct Role {
     pub id: Uuid,
-    pub parent_resource_id: Option<Uuid>,
-    pub created_by_id: Uuid,
     pub name: String,
     pub description: Option<String>,
     pub created_at: DateTime<Utc>,

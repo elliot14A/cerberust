@@ -29,6 +29,7 @@ diesel::table! {
     resource (id) {
         id -> Uuid,
         parent_resource_id -> Nullable<Uuid>,
+        created_by_id -> Uuid,
         name -> Text,
         description -> Nullable<Text>,
         created_at -> Timestamptz,
@@ -101,6 +102,7 @@ diesel::table! {
 }
 
 diesel::joinable!(refresh_token -> session (session_id));
+diesel::joinable!(resource -> user (created_by_id));
 diesel::joinable!(role_privilege -> privilege (privilege_id));
 diesel::joinable!(role_privilege -> resource (resource_id));
 diesel::joinable!(role_privilege -> role (role_id));
