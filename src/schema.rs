@@ -11,7 +11,7 @@ diesel::table! {
         id -> Uuid,
         name -> Text,
         description -> Nullable<Text>,
-        created_at -> Nullable<Timestamptz>,
+        created_at -> Timestamptz,
         updated_at -> Nullable<Timestamptz>,
     }
 }
@@ -31,7 +31,7 @@ diesel::table! {
         parent_resource_id -> Nullable<Uuid>,
         name -> Text,
         description -> Nullable<Text>,
-        created_at -> Nullable<Timestamptz>,
+        created_at -> Timestamptz,
         updated_at -> Nullable<Timestamptz>,
     }
 }
@@ -41,7 +41,7 @@ diesel::table! {
         id -> Uuid,
         name -> Text,
         description -> Nullable<Text>,
-        created_at -> Nullable<Timestamptz>,
+        created_at -> Timestamptz,
         updated_at -> Nullable<Timestamptz>,
     }
 }
@@ -51,7 +51,7 @@ diesel::table! {
         role_id -> Uuid,
         privilege_id -> Uuid,
         resource_id -> Uuid,
-        created_at -> Nullable<Timestamptz>,
+        created_at -> Timestamptz,
         updated_at -> Nullable<Timestamptz>,
     }
 }
@@ -95,7 +95,7 @@ diesel::table! {
     user_role (user_id, role_id) {
         user_id -> Uuid,
         role_id -> Uuid,
-        created_at -> Nullable<Timestamptz>,
+        created_at -> Timestamptz,
         updated_at -> Nullable<Timestamptz>,
     }
 }
