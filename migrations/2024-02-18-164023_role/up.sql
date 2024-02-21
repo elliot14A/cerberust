@@ -9,3 +9,5 @@ create table "role" (
 
 select
   trigger_updated_at ('"role"');
+
+insert into "role" (name, description) values ('owner', 'owner of the resource');
