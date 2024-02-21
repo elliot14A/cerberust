@@ -4,11 +4,7 @@ use diesel::{
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use uuid::Uuid;
 
-use crate::{
-    error::{handle_diesel_error, Result},
-    models::resource::Resource,
-    schema::resource,
-};
+use crate::{error::Result, models::resource::Resource, schema::resource};
 
 pub async fn get_resource(
     conn: &mut AsyncPgConnection,
@@ -18,8 +14,7 @@ pub async fn get_resource(
         .filter(resource::id.eq(resource_id))
         .first(conn)
         .await
-        .optional()
-        .map_err(handle_diesel_error)?)
+        .optional()?)
 }
 
 /// get parent resource of a resource by id
@@ -37,8 +32,7 @@ pub async fn get_parent_resource(
         )
         .select(parent.fields(resource::all_columns))
         .load(conn)
-        .await
-        .map_err(handle_diesel_error)?;
+        .await?;
     // return the first parent resource if it exists
     // else return None
     Ok(parent_resource.into_iter().next())

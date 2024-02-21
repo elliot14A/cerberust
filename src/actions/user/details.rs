@@ -1,16 +1,11 @@
-use crate::error::{handle_diesel_error, Result};
+use crate::error::Result;
 use crate::{models::user::User, schema::user};
 use diesel::{ExpressionMethods, OptionalExtension, QueryDsl};
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use uuid::Uuid;
 
 pub async fn get_user_by_id(conn: &mut AsyncPgConnection, id: Uuid) -> Result<Option<User>> {
-    Ok(user::table
-        .find(id)
-        .first::<User>(conn)
-        .await
-        .optional()
-        .map_err(handle_diesel_error)?)
+    Ok(user::table.find(id).first::<User>(conn).await.optional()?)
 }
 
 pub async fn get_user_by_email(
@@ -21,6 +16,5 @@ pub async fn get_user_by_email(
         .filter(user::email.eq(email))
         .first::<User>(conn)
         .await
-        .optional()
-        .map_err(handle_diesel_error)?)
+        .optional()?)
 }

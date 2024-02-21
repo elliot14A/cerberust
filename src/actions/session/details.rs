@@ -3,7 +3,7 @@ use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use uuid::Uuid;
 
 use crate::error::Result;
-use crate::{error::handle_diesel_error, models::session::Session};
+use crate::models::session::Session;
 
 pub async fn get_session_by_id(
     conn: &mut AsyncPgConnection,
@@ -16,14 +16,12 @@ pub async fn get_session_by_id(
             .find(session_id)
             .first::<Session>(conn)
             .await
-            .optional()
-            .map_err(handle_diesel_error)?)
+            .optional()?)
     } else {
         Ok(crate::schema::session::table
             .find(session_id)
             .first::<Session>(conn)
             .await
-            .optional()
-            .map_err(handle_diesel_error)?)
+            .optional()?)
     }
 }

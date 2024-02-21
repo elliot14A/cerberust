@@ -1,6 +1,6 @@
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
-use crate::error::{handle_diesel_error, Result};
+use crate::error::Result;
 use crate::models::refresh_token::{NewRefreshToken, RefreshToken};
 use crate::schema::refresh_token;
 
@@ -11,6 +11,5 @@ pub async fn create_refresh_token(
     Ok(diesel::insert_into(refresh_token::table)
         .values(&new_refresh_token)
         .get_result(conn)
-        .await
-        .map_err(handle_diesel_error)?)
+        .await?)
 }

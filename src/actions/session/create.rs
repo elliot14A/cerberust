@@ -1,7 +1,7 @@
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 
 use crate::{
-    error::{handle_diesel_error, Result},
+    error::Result,
     models::session::{NewSession, Session},
 };
 pub async fn create_session(
@@ -11,6 +11,5 @@ pub async fn create_session(
     Ok(diesel::insert_into(crate::schema::session::table)
         .values(&new_session)
         .get_result(conn)
-        .await
-        .map_err(handle_diesel_error)?)
+        .await?)
 }

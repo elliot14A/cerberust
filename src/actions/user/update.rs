@@ -1,8 +1,4 @@
-use crate::{
-    error::{handle_diesel_error, Result},
-    models::user::User,
-    schema::user,
-};
+use crate::{error::Result, models::user::User, schema::user};
 use diesel::ExpressionMethods;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use uuid::Uuid;
@@ -12,8 +8,7 @@ pub async fn update_email_verified(conn: &mut AsyncPgConnection, user_id: Uuid) 
         .filter(user::id.eq(user_id))
         .set(user::email_verified.eq(true))
         .get_result::<User>(conn)
-        .await
-        .map_err(handle_diesel_error)?)
+        .await?)
 }
 
 pub async fn update_password(
@@ -25,6 +20,5 @@ pub async fn update_password(
         .filter(user::id.eq(user_id))
         .set(user::password.eq(password))
         .get_result::<User>(conn)
-        .await
-        .map_err(handle_diesel_error)?)
+        .await?)
 }
