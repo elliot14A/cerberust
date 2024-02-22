@@ -3,9 +3,9 @@ use std::sync::Arc;
 use crate::actions::token::create::create_token;
 use crate::actions::user::create::create_user;
 use crate::error::ApiErrResp;
+use crate::error::Result;
 use crate::models::token::TokenType;
-use crate::models::user::{NewUser, User};
-use crate::{error::Result, utils::response::to_response};
+use crate::models::user::NewUser;
 use crate::{
     extractors::FromValidatedJson,
     utils::{hash::hash_password, smtp::SmtpService},
@@ -59,9 +59,5 @@ pub async fn register(
     tokio::spawn(async move {
         smtp.send_verification_email(email, token).unwrap();
     });
-    let response = to_response::<User>(
-        "Your email is registered, please verify it now".to_owned(),
-        user,
-    );
-    Ok((StatusCode::CREATED, Json(response)))
+    Ok((StatusCode::CREATED, Json(user)))
 }

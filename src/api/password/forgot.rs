@@ -6,7 +6,7 @@ use crate::{
     error::{ApiErrResp, Result},
     extractors::FromValidatedJson,
     models::token::{NewToken, TokenType},
-    utils::{hash::hash_password, response::to_response, smtp::SmtpService},
+    utils::{hash::hash_password, smtp::SmtpService},
 };
 use axum::{
     extract::{Path, State},
@@ -15,6 +15,7 @@ use axum::{
 };
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
 use hyper::StatusCode;
+use serde_json::json;
 use validator::Validate;
 
 pub async fn forgot_password_send_email(
@@ -51,10 +52,9 @@ pub async fn forgot_password_send_email(
         smtp.send_password_reset_email(email, token).unwrap();
     });
     //
-    let response =
-        to_response::<Option<String>>(format!("reset password email sent to {}", user.email), None);
-
-    Ok(Json(response))
+    Ok(Json(json!({
+        "message": format!("reset password email sent to {}", user.email)
+    })))
 }
 
 #[derive(serde::Deserialize, Validate)]
@@ -83,7 +83,7 @@ pub async fn reset_password(
             if now.signed_duration_since(token.created_at).num_hours() > 1 {
                 return Err(ApiErrResp::unauthorized(Some("Token expired".to_string())));
             }
-            return Ok(token);
+            Ok(token)
         })
         .ok_or_else(|| ApiErrResp::unauthorized(Some(String::from("Invalid Token"))))??;
     //
@@ -104,10 +104,8 @@ pub async fn reset_password(
     )
     .await?;
     //
-    let response = to_response::<Option<String>>(
-        format!("password reset successful for user:{}", user.username),
-        None,
-    );
 
-    Ok(Json(response))
+    Ok(Json(json!({
+        "message": format!("password reset successful for user:{}", user.email)
+    })))
 }

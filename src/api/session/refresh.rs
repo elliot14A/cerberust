@@ -10,14 +10,10 @@ use crate::{
     },
     error::{ApiErrResp, Result},
     models::refresh_token::NewRefreshToken,
-    utils::{
-        jwt::{create_token, verify_token, Claims, TokenType},
-        response::to_response,
-    },
+    utils::jwt::{create_token, verify_token, Claims, TokenType},
 };
 use axum::{extract::State, response::IntoResponse, Json};
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
-use serde_json::Value;
 use tower_cookies::{cookie::SameSite, Cookie, Cookies};
 use uuid::Uuid;
 
@@ -116,7 +112,5 @@ pub async fn refresh(
         "access_token": access_token,
     });
 
-    let response = to_response::<Value>("refresh successful".to_string(), json);
-
-    Ok(Json(response))
+    Ok(Json(json))
 }

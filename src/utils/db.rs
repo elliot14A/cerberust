@@ -17,8 +17,9 @@ use crate::{
 // if parent resource found then check user and parent resource relation
 // repeat this process until parent resource not found
 // if user and resource relation not found then even after checking all parent resources
-// returnn false
+// return false
 #[async_recursion]
+/// recursively checks if user has privilege on resource or the parent resource
 pub async fn check_has_privilege(
     conn: &mut AsyncPgConnection,
     user_id: Uuid,

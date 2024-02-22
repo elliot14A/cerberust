@@ -7,13 +7,12 @@ use crate::error::ApiErrResp;
 use crate::models::refresh_token::NewRefreshToken;
 use crate::models::session::NewSession;
 use crate::utils::jwt::{self, TokenType};
-use crate::utils::response::to_response;
 use crate::{error::Result, utils::hash::verify_password};
 use axum::extract::State;
 use axum::{response::IntoResponse, Json};
 use diesel_async::pooled_connection::bb8::Pool;
 use diesel_async::AsyncPgConnection;
-use serde_json::{json, Value};
+use serde_json::json;
 use tower_cookies::cookie::SameSite;
 use tower_cookies::{Cookie, Cookies};
 
@@ -85,7 +84,6 @@ pub async fn login(
     let json = json!({
         "access_token": access_token,
     });
-    let response = to_response::<Value>(format!("Login successful"), json);
 
-    Ok(Json(response))
+    Ok(Json(json))
 }

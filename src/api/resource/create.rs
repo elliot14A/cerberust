@@ -23,7 +23,7 @@ use crate::{
         user_role::NewUserRole,
         CREATE, RESOURCE, ROOT_ROLE,
     },
-    utils::{db::check_has_privilege, response::to_response},
+    utils::db::check_has_privilege,
 };
 
 #[derive(Deserialize, Validate)]
@@ -60,12 +60,7 @@ pub async fn create_resource_handler(
         .scope_boxed()
         .await?;
 
-    let response = to_response::<Option<Resource>>(
-        String::from("created resource successfully"),
-        Some(resource),
-    );
-
-    Ok(Json(response))
+    Ok(Json(resource))
 }
 
 pub async fn create_child_resource_handler(
@@ -108,12 +103,7 @@ pub async fn create_child_resource_handler(
         .scope_boxed()
         .await?;
 
-    let response = to_response::<Option<Resource>>(
-        String::from("created resource successfully"),
-        Some(resource),
-    );
-
-    Ok(Json(response))
+    Ok(Json(resource))
 }
 
 async fn create_resource_and_assign_role(

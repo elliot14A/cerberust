@@ -3,11 +3,12 @@ use crate::{
     error::{ApiErrResp, Result},
     extractors::FromValidatedJson,
     models::token::{NewToken, TokenType},
-    utils::{response::to_response, smtp::SmtpService},
+    utils::smtp::SmtpService,
 };
 use axum::{extract::State, response::IntoResponse, Extension, Json};
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
 use hyper::StatusCode;
+use serde_json::json;
 use std::sync::Arc;
 
 use crate::api::VerifyOrResetRequestBody;
@@ -63,11 +64,7 @@ pub async fn resend_verification_email(
         let _ = smtp.send_verification_email(email, token);
     });
 
-    // return response
-    let response = to_response::<Option<String>>(
-        "Verification email sent, please check your email".to_string(),
-        None,
-    );
-
-    Ok(Json(response))
+    Ok(Json(json!({
+        "message": "Verification email sent, please check your email"
+    })))
 }

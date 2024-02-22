@@ -5,9 +5,8 @@ use crate::{
 };
 use axum::{extract::State, response::IntoResponse, Json};
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
-use serde_json::{json, Value};
 
-use crate::{error::ApiErrResp, utils::response::to_response};
+use crate::error::ApiErrResp;
 
 pub async fn whoami(
     Authenticated(session): Authenticated,
@@ -20,12 +19,6 @@ pub async fn whoami(
     let user = get_user_by_id(&mut conn, session.user_id)
         .await?
         .ok_or_else(|| ApiErrResp::unauthorized(Some("User not found".to_string())))?;
-    //
-    let json = json!({
-        "user": user
-    });
-    //
-    let response = to_response::<Value>("User fetched".to_owned(), json);
 
-    Ok(Json(response))
+    Ok(Json(user))
 }
