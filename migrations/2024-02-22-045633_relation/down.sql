@@ -1,2 +1,2 @@
 -- This file should undo anything in `up.sql`
-drop table if exists "role_privilege";
+drop table if exists "relation";
