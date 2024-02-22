@@ -5,6 +5,8 @@ use uuid::Uuid;
 
 use crate::schema::resource;
 
+use super::role::{PrivilegeVec, Role};
+
 #[derive(Debug, Insertable, Deserialize, Clone)]
 #[diesel(table_name = resource)]
 pub struct NewResource {
@@ -24,4 +26,18 @@ pub struct Resource {
     pub description: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct RoleResource {
+    #[serde(flatten)]
+    pub resource: Resource,
+    pub role: RoleFlattenned,
+}
+
+#[derive(Debug, Serialize)]
+pub struct RoleFlattenned {
+    pub name: String,
+    pub description: Option<String>,
+    pub privileges: PrivilegeVec,
 }
