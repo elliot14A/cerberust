@@ -11,4 +11,4 @@ create table "role" (
 select
   trigger_updated_at ('"role"');
 
-insert into "role" (name, description, privileges) values ('root', 'root role can do anything i.e create, read, update, delete, grant and revoke', '[{"entity": "resource", "privileges": ["*"]}, {"entity": "role", "privileges": "*"}]');
+insert into "role" (name, description, privileges) values ('root', 'root role can do anything i.e create, read, update, delete, grant and revoke', '[{"entity": "resource", "privileges": ["*"]}, {"entity": "role", "privileges": ["*"]}]');

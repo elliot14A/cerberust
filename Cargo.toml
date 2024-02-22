@@ -27,5 +27,6 @@ uuid = { version = "1.7", features = ["serde", "v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 tower-cookies = "0.10"
 jsonwebtoken = { version = "9", features = ["use_pem"] }
-diesel = { version = "2.1.4", features = ["uuid", "chrono"] }
+diesel = { version = "2.1.4", features = ["uuid", "chrono", "serde_json"] }
 diesel-async = { version = "0.4", features = ["postgres", "bb8"] }
+async-recursion = "1"

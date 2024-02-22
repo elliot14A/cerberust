@@ -17,18 +17,18 @@ use crate::schema::role;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
 pub struct Privilege {
-    pub enitity: String,
+    pub entity: String,
     pub privileges: Vec<String>,
 }
 
 #[derive(FromSqlRow, AsExpression, serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
-#[sql_type = "Jsonb"]
+#[diesel(sql_type = Jsonb)]
 pub struct PrivilegeVec(pub Vec<Privilege>);
 
 impl FromSql<Jsonb, Pg> for PrivilegeVec {
     fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
-        let json_data: serde_json::Value = serde_json::from_slice(bytes.as_bytes())?;
-        Ok(serde_json::from_value(json_data)?)
+        let value = <serde_json::Value as FromSql<Jsonb, Pg>>::from_sql(bytes)?;
+        Ok(serde_json::from_value(value)?)
     }
 }
 

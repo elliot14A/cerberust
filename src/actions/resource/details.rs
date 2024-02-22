@@ -37,3 +37,24 @@ pub async fn get_parent_resource(
     // else return None
     Ok(parent_resource.into_iter().next())
 }
+
+/// get parent resource id of a resource by id
+pub async fn get_parent_resource_id(
+    conn: &mut AsyncPgConnection,
+    resource_id: Uuid,
+) -> Result<Option<Uuid>> {
+    let (child, parent) = diesel::alias!(resource as child, resource as parent);
+    let parent_resource: Vec<Uuid> = child
+        .filter(child.field(resource::id).eq(resource_id))
+        .inner_join(
+            parent.on(child
+                .field(resource::parent_resource_id)
+                .eq(parent.field(resource::id).nullable())),
+        )
+        .select(parent.fields(resource::id))
+        .load(conn)
+        .await?;
+    // return the first parent resource if it exists
+    // else return None
+    Ok(parent_resource.into_iter().next())
+}

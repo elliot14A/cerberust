@@ -11,18 +11,19 @@ use validator::Validate;
 
 use crate::{
     actions::{
-        resource::create::create_resource, role::details::get_role_id_by_name,
-        user_role::create::create_user_role,
+        relation::create::create_relation, resource::create::create_resource,
+        role::details::get_role_id_by_name, user_role::create::create_user_role,
     },
     error::{ApiErrResp, Result},
     extractors::{authenticator::Authenticated, FromValidatedJson},
     models::{
+        relation::NewRelation,
         resource::{NewResource, Resource},
         session::Session,
         user_role::NewUserRole,
-        ROOT_PRIVILEGE, ROOT_ROLE,
+        CREATE, RESOURCE, ROOT_ROLE,
     },
-    utils::response::to_response,
+    utils::{db::check_has_privilege, response::to_response},
 };
 
 #[derive(Deserialize, Validate)]
@@ -52,25 +53,9 @@ pub async fn create_resource_handler(
 
     let resource = conn
         .transaction::<Resource, ApiErrResp, _>(|conn| {
-            Box::pin(async move {
-                // create resource
-                let resource = create_resource(conn, new_resource).await?;
-
-                // // assign root role to the user
-                let role_id = get_role_id_by_name(conn, ROOT_ROLE).await?;
-                if role_id.is_none() {
-                    return Err(ApiErrResp {
-                        code: http::StatusCode::INTERNAL_SERVER_ERROR,
-                        error: "INTERNAL_SERVER_ERROR".to_string(),
-                        message: "Role not found".to_string(),
-                    });
-                }
-                let role_id = role_id.unwrap();
-                let new_user_role = NewUserRole { user_id, role_id };
-                create_user_role(conn, new_user_role).await?;
-
-                Ok(resource)
-            })
+            Box::pin(
+                async move { create_resource_and_assign_role(conn, new_resource, user_id).await },
+            )
         })
         .scope_boxed()
         .await?;
@@ -81,4 +66,82 @@ pub async fn create_resource_handler(
     );
 
     Ok(Json(response))
+}
+
+pub async fn create_child_resource_handler(
+    State(pool): State<Arc<Pool<AsyncPgConnection>>>,
+    Authenticated(Session { user_id, .. }): Authenticated,
+    FromValidatedJson(new_resource): FromValidatedJson<RequestBody>,
+) -> Result<impl IntoResponse> {
+    let new_resource = NewResource {
+        parent_resource_id: new_resource.parent_resource_id,
+        name: new_resource.name,
+        description: new_resource.description,
+    };
+
+    let mut conn = pool
+        .get()
+        .await
+        .map_err(|e| ApiErrResp::internal_server_error(e.to_string()))?;
+
+    let parent_resource_id = new_resource.parent_resource_id.unwrap();
+
+    let has_privilege =
+        check_has_privilege(&mut conn, user_id, parent_resource_id, CREATE, RESOURCE).await?;
+
+    println!("=====> {}", has_privilege);
+
+    if !has_privilege {
+        return Err(ApiErrResp {
+            code: http::StatusCode::FORBIDDEN,
+            error: "FORBIDDEN".to_string(),
+            message: "You do not have permission to create a resource".to_string(),
+        });
+    }
+
+    let resource = conn
+        .transaction::<Resource, ApiErrResp, _>(|conn| {
+            Box::pin(
+                async move { create_resource_and_assign_role(conn, new_resource, user_id).await },
+            )
+        })
+        .scope_boxed()
+        .await?;
+
+    let response = to_response::<Option<Resource>>(
+        String::from("created resource successfully"),
+        Some(resource),
+    );
+
+    Ok(Json(response))
+}
+
+async fn create_resource_and_assign_role(
+    conn: &mut AsyncPgConnection,
+    new_resource: NewResource,
+    user_id: Uuid,
+) -> Result<Resource> {
+    let resource = create_resource(conn, new_resource).await?;
+    let role_id = get_role_id_by_name(conn, ROOT_ROLE).await?;
+    if role_id.is_none() {
+        return Err(ApiErrResp {
+            code: http::StatusCode::INTERNAL_SERVER_ERROR,
+            error: "INTERNAL_SERVER_ERROR".to_string(),
+            message: "Role not found".to_string(),
+        });
+    }
+
+    let role_id = role_id.unwrap();
+
+    let new_user_role = NewUserRole { user_id, role_id };
+    create_user_role(conn, new_user_role).await?;
+
+    let new_relation = NewRelation {
+        user_id,
+        resource_id: resource.id,
+        role_id,
+    };
+    create_relation(conn, new_relation).await?;
+
+    Ok(resource)
 }
