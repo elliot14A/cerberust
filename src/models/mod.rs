@@ -1,9 +1,13 @@
-pub mod privilege;
 pub mod refresh_token;
 pub mod resource;
 pub mod role;
-pub mod role_privilege;
 pub mod session;
 pub mod token;
 pub mod user;
 pub mod user_role;
+
+// default role
+pub const ROOT_ROLE: &str = "root";
+
+// default privileges
+pub const ROOT_PRIVILEGE: &str = "create";

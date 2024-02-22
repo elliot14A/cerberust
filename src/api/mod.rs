@@ -1,5 +1,6 @@
 mod auth;
 mod password;
+mod resource;
 mod session;
 mod user;
 
@@ -11,8 +12,8 @@ use serde::Deserialize;
 use validator::Validate;
 
 use self::{
-    auth::init_auth_routes, password::init_password_routes, session::init_session_routes,
-    user::init_user_routes,
+    auth::init_auth_routes, password::init_password_routes, resource::init_resource_routes,
+    session::init_session_routes, user::init_user_routes,
 };
 
 pub fn init_routes(pool: Pool<AsyncPgConnection>) -> Router {
@@ -22,6 +23,7 @@ pub fn init_routes(pool: Pool<AsyncPgConnection>) -> Router {
         .nest("/password", init_password_routes())
         .nest("/user", init_user_routes())
         .nest("/session", init_session_routes())
+        .nest("/resource", init_resource_routes())
         .with_state(Arc::new(pool))
 }
 

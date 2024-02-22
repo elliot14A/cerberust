@@ -1,4 +1,3 @@
-use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -16,10 +15,8 @@ pub struct NewUserRole {
 #[derive(Debug, Queryable, Serialize, Deserialize, Clone)]
 #[diesel(table_name = user_role)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-#[diesel(primary_key(user_id, role_id))]
 pub struct UserRole {
+    pub id: Uuid,
     pub user_id: Uuid,
     pub role_id: Uuid,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: Option<DateTime<Utc>>,
 }

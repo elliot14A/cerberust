@@ -11,3 +11,12 @@ pub async fn get_role_by_id(conn: &mut AsyncPgConnection, role_id: Uuid) -> Resu
         .await
         .optional()?)
 }
+
+pub async fn get_role_id_by_name(conn: &mut AsyncPgConnection, name: &str) -> Result<Option<Uuid>> {
+    Ok(role::table
+        .filter(role::name.eq(name))
+        .select(role::id)
+        .first(conn)
+        .await
+        .optional()?)
+}

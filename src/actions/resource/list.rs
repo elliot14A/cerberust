@@ -27,13 +27,3 @@ pub async fn get_child_resources(
 pub async fn get_all_resources(conn: &mut AsyncPgConnection) -> Result<Vec<Resource>> {
     Ok(resource::table.load(conn).await?)
 }
-
-pub async fn list_user_resources(
-    conn: &mut AsyncPgConnection,
-    user_id: Uuid,
-) -> Result<Vec<Resource>> {
-    Ok(resource::table
-        .filter(resource::created_by_id.eq(user_id))
-        .load(conn)
-        .await?)
-}

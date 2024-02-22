@@ -1,10 +1,47 @@
+use std::io::Write;
+
 use chrono::{DateTime, Utc};
-use diesel::prelude::*;
+use diesel::{
+    deserialize::{FromSql, FromSqlRow},
+    expression::AsExpression,
+    pg::{Pg, PgValue},
+    prelude::*,
+    serialize::{IsNull, ToSql},
+    sql_types::Jsonb,
+};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use validator::Validate;
 
 use crate::schema::role;
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
+pub struct Privilege {
+    pub enitity: String,
+    pub privileges: Vec<String>,
+}
+
+#[derive(FromSqlRow, AsExpression, serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
+#[sql_type = "Jsonb"]
+pub struct PrivilegeVec(pub Vec<Privilege>);
+
+impl FromSql<Jsonb, Pg> for PrivilegeVec {
+    fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
+        let json_data: serde_json::Value = serde_json::from_slice(bytes.as_bytes())?;
+        Ok(serde_json::from_value(json_data)?)
+    }
+}
+
+impl ToSql<Jsonb, Pg> for PrivilegeVec {
+    fn to_sql<'b>(
+        &'b self,
+        out: &mut diesel::serialize::Output<'b, '_, Pg>,
+    ) -> diesel::serialize::Result {
+        let json_data = serde_json::to_value(self)?;
+        diesel::serialize::Output::write_all(out, json_data.to_string().as_bytes())?;
+        Ok(IsNull::No)
+    }
+}
 
 #[derive(Debug, Insertable, Validate, Deserialize, Clone)]
 #[diesel(table_name = role)]
@@ -13,6 +50,7 @@ pub struct NewRole {
     pub name: String,
     #[validate(length(min = 8))]
     pub description: Option<String>,
+    pub privileges: PrivilegeVec,
 }
 
 #[derive(Debug, Queryable, Selectable, Serialize, Clone)]
@@ -22,6 +60,7 @@ pub struct Role {
     pub id: Uuid,
     pub name: String,
     pub description: Option<String>,
+    pub privileges: PrivilegeVec,
     pub created_at: DateTime<Utc>,
     pub updated_at: Option<DateTime<Utc>>,
 }
