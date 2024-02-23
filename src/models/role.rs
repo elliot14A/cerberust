@@ -1,12 +1,9 @@
-use std::io::Write;
-
 use chrono::{DateTime, Utc};
 use diesel::{
     deserialize::{FromSql, FromSqlRow},
     expression::AsExpression,
     pg::{Pg, PgValue},
     prelude::*,
-    serialize::{IsNull, ToSql},
     sql_types::Jsonb,
 };
 use serde::{Deserialize, Serialize};
@@ -29,17 +26,6 @@ impl FromSql<Jsonb, Pg> for PrivilegeVec {
     fn from_sql(bytes: PgValue) -> diesel::deserialize::Result<Self> {
         let value = <serde_json::Value as FromSql<Jsonb, Pg>>::from_sql(bytes)?;
         Ok(serde_json::from_value(value)?)
-    }
-}
-
-impl ToSql<Jsonb, Pg> for PrivilegeVec {
-    fn to_sql<'b>(
-        &'b self,
-        out: &mut diesel::serialize::Output<'b, '_, Pg>,
-    ) -> diesel::serialize::Result {
-        let json_data = serde_json::to_value(self)?;
-        diesel::serialize::Output::write_all(out, json_data.to_string().as_bytes())?;
-        Ok(IsNull::No)
     }
 }
 

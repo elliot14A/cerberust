@@ -31,15 +31,14 @@ services:
       context: .
     ports:
       - "8080:8080"
-    environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres/cerberust
-      SMTP_HOST: mailhog
-      SMTP_PORT: 1025
       
     depends_on:
       - mailhog
     volumes:
       - ./volumes/keys:/app/keys
+      - ./cerberust.toml:/app/cerberust.toml
+    env_file:
+      - credentials.env
     develop:
       watch:
         - action: rebuild

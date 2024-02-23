@@ -7,13 +7,13 @@ use lettre::{
 // use tokio::time;
 use tracing::{error, info};
 
-use crate::error::ApiErrResp;
+use crate::{config::ServerConfig, error::ApiErrResp};
 
-fn smtp_service() -> SmtpTransport {
-    let smtp_host = std::env::var("SMTP_HOST").unwrap_or("0.0.0.0".to_string());
+fn smtp_service(config: ServerConfig) -> SmtpTransport {
+    let smtp_host = config.smtp_host;
     let smtp_user = std::env::var("SMTP_USER").unwrap_or("".to_string());
     let smtp_pass = std::env::var("SMTP_PASS").unwrap_or("".to_string());
-    let smtp_port = std::env::var("SMTP_PORT").unwrap_or("1025".to_string());
+    let smtp_port = config.smtp_port;
 
     let credentials = Credentials::new(smtp_user, smtp_pass);
 
@@ -38,9 +38,9 @@ pub struct SmtpService {
 }
 
 impl SmtpService {
-    pub fn new() -> Self {
+    pub fn new(config: ServerConfig) -> Self {
         Self {
-            transport: smtp_service(),
+            transport: smtp_service(config),
             email: std::env::var("SMTP_EMAIL").unwrap_or("cerberust@example.com".to_string()),
         }
     }

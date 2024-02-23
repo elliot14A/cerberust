@@ -11,8 +11,10 @@ use tracing::info;
 use crate::{api::init_routes, logger::logger};
 
 pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
-    let default_http_port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
-    let default_addr = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let config = crate::config::Config::load()?;
+
+    let default_http_port = config.config.port.clone();
+    let default_addr = "0.0.0.0".to_string();
     let default_addr = format!("{}:{}", default_addr, default_http_port);
 
     let cors = tower_http::cors::CorsLayer::new()
@@ -23,20 +25,25 @@ pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
     let app = Router::new().layer(cors);
 
     // connect to database
-    let database_url = std::env::var("DATABASE_URL").unwrap_or(String::from(
-        "postgres://postgres:postgres@localhost/cerberust",
-    ));
+    let database_url = config.config.database_url.clone();
 
-    let config =
+    let db_config =
         AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(&database_url);
-    let pool = bb8::Pool::builder().build(config).await?;
+    let pool = bb8::Pool::builder().build(db_config).await?;
 
-    let routes = init_routes(pool);
+    let routes = init_routes(pool.clone());
 
     let app = app.nest("/api", routes).layer(logger());
 
+    // use emoji to make it stand out
+    info!("🛠 Creating resources and roles from cerberust.toml");
+    let mut conn = pool.get().await?;
+    let root_user_id = config.create_root_user(&mut conn).await?;
+    config.create_resources(root_user_id, &mut conn).await?;
+    config.create_roles(&mut conn).await?;
+
     // build smtp service
-    let smtp = crate::utils::smtp::SmtpService::new();
+    let smtp = crate::utils::smtp::SmtpService::new(config.config);
 
     let app = app
         .layer(CookieManagerLayer::new())

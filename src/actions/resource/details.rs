@@ -69,3 +69,15 @@ pub async fn get_resource_by_id(
         .await
         .optional()?)
 }
+
+pub async fn get_resource_id_by_name(
+    conn: &mut AsyncPgConnection,
+    resource_name: &str,
+) -> Result<Option<Uuid>> {
+    Ok(resource::table
+        .filter(resource::name.eq(resource_name))
+        .select(resource::id)
+        .first(conn)
+        .await
+        .optional()?)
+}

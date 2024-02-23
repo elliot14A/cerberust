@@ -30,3 +30,4 @@ jsonwebtoken = { version = "9", features = ["use_pem"] }
 diesel = { version = "2.1.4", features = ["uuid", "chrono", "serde_json"] }
 diesel-async = { version = "0.4", features = ["postgres", "bb8"] }
 async-recursion = "1"
+toml = "0.8"

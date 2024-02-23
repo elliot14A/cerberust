@@ -8,6 +8,7 @@ mod models;
 mod schema;
 mod server;
 mod utils;
+mod config;
 
 use server::build_http_server;
 

@@ -20,3 +20,5 @@ Cargo.lock
 /volumes
 keys
 .env
+cerberust.toml
+credentials.env
