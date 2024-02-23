@@ -1,4 +1,3 @@
--- Your SQL goes here
 create table "role" (
   id uuid primary key default uuid_generate_v4 (),
   name text collate "case_insensitive" not null,

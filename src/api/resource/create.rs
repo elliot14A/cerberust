@@ -27,7 +27,7 @@ use crate::{
 };
 
 #[derive(Deserialize, Validate)]
-pub struct RequestBody {
+pub(crate) struct RequestBody {
     pub parent_resource_id: Option<Uuid>,
     #[validate(length(min = 3, max = 24))]
     pub name: String,

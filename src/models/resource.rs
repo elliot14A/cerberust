@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::schema::resource;
 
-use super::role::{PrivilegeVec, Role};
+use super::role::PrivilegeVec;
 
 #[derive(Debug, Insertable, Deserialize, Clone)]
 #[diesel(table_name = resource)]

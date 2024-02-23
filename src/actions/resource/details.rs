@@ -58,3 +58,14 @@ pub async fn get_parent_resource_id(
     // else return None
     Ok(parent_resource.into_iter().next())
 }
+
+pub async fn get_resource_by_id(
+    conn: &mut AsyncPgConnection,
+    resource_id: Uuid,
+) -> Result<Option<Resource>> {
+    Ok(resource::table
+        .filter(resource::id.eq(resource_id))
+        .first(conn)
+        .await
+        .optional()?)
+}
