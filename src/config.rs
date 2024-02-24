@@ -1,3 +1,5 @@
+use std::env;
+
 use diesel_async::AsyncPgConnection;
 use serde::Deserialize;
 use tracing::{error, info};
@@ -21,7 +23,7 @@ use crate::{
     utils::hash::hash_password,
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct ServerConfig {
     pub port: String,
     pub database_url: String,
@@ -30,21 +32,33 @@ pub struct ServerConfig {
     pub keys_path: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+impl Default for ServerConfig {
+    fn default() -> Self {
+        ServerConfig {
+            port: "8080".to_string(),
+            database_url: "postgres://postgres:postgres@postgres/cerberust".to_string(),
+            smtp_host: "mailhog".to_string(),
+            smtp_port: "1025".to_string(),
+            keys_path: None,
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Resource {
     pub name: String,
     pub description: Option<String>,
     pub parent: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Role {
     pub name: String,
     pub description: Option<String>,
     pub privileges: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default, Clone)]
 pub struct Config {
     pub config: ServerConfig,
     #[serde(rename = "resource")]
@@ -54,18 +68,41 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn load() -> anyhow::Result<Self> {
+    pub fn load() -> anyhow::Result<(Self, bool)> {
         // parse cerberust.toml file
-        let config = std::fs::read_to_string("cerberust.toml")?;
-        let config: Config = toml::from_str(&config)?;
-        Ok(config)
+        let default: bool;
+        let config: Config = match std::fs::read_to_string("cerberust.toml") {
+            Ok(content) => {
+                default = false;
+                toml::from_str(&content)?
+            }
+            Err(_) => {
+                default = true;
+                Config::default()
+            }
+        };
+        Ok((config, default))
     }
 
-    pub async fn create_root_user(&self, conn: &mut AsyncPgConnection) -> anyhow::Result<Uuid> {
-        let email =
-            std::env::var("ROOT_EMAIL").map_err(|_| anyhow::anyhow!("ROOT_EMAIL not set"))?;
-        let password =
-            std::env::var("ROOT_PASSWORD").map_err(|_| anyhow::anyhow!("ROOT_PASSWORD not set"))?;
+    pub async fn create_root_user(
+        &self,
+        conn: &mut AsyncPgConnection,
+    ) -> anyhow::Result<Option<Uuid>> {
+        let email = match env::var("ROOT_EMAIL") {
+            Ok(val) => val,
+            Err(_) => {
+                info!("🔑 ROOT_EMAIL not set");
+                return Ok(None);
+            }
+        };
+
+        let password = match env::var("ROOT_PASSWORD") {
+            Ok(val) => val,
+            Err(_) => {
+                info!("🔑 ROOT_PASSWORD not set");
+                return Ok(None);
+            }
+        };
 
         let hash = hash_password(password).await?;
         // create root user with email_verified = true
@@ -79,9 +116,9 @@ impl Config {
             Ok(user) => user,
             Err(e) => {
                 if e.error == "CONFLICT" {
-                    info!("Root user already exists.");
+                    info!("🔑 Root user already exists.");
 
-                    return Ok(get_user_by_email(conn, email).await?.unwrap().id);
+                    return Ok(Some(get_user_by_email(conn, email).await?.unwrap().id));
                 }
                 return Err(e.into());
             }
@@ -100,9 +137,9 @@ impl Config {
         };
 
         create_user_role(conn, new_user_role).await?;
-        info!("Root user created successfully.");
+        info!("🔑 Root user created");
 
-        Ok(root_user.id)
+        Ok(Some(root_user.id))
     }
 
     pub async fn create_resources(
@@ -111,7 +148,7 @@ impl Config {
         conn: &mut AsyncPgConnection,
     ) -> anyhow::Result<()> {
         if self.resources.is_empty() {
-            info!("No resource to create.");
+            info!("📦 No resources to create.");
             return Ok(());
         }
 
@@ -119,13 +156,13 @@ impl Config {
         let role_id = role_id.unwrap();
 
         for resource in &self.resources {
-            info!("Creating resource: {}", resource.name);
+            info!("📦 Creating resource: {}", resource.name);
             let resource_id: Uuid;
             if resource.parent.is_some() {
                 let parent_resource_id =
                     get_resource_id_by_name(conn, &resource.parent.clone().unwrap()).await?;
                 if parent_resource_id.is_none() {
-                    error!("Parent resource not found.");
+                    error!("📦 Parent resource not found.");
                     continue;
                 }
                 let new_resource = crate::models::resource::NewResource {
@@ -138,7 +175,10 @@ impl Config {
                     Ok(resource) => resource,
                     Err(e) => {
                         if e.error == "CONFLICT" {
-                            info!("Resource {} already exists, skipping!.", new_resource.name);
+                            info!(
+                                "📦 Resource {} already exists, skipping!.",
+                                new_resource.name
+                            );
                             continue;
                         }
                         return Err(e.into());
@@ -146,7 +186,7 @@ impl Config {
                 };
                 resource_id = resource.id;
 
-                info!("Sub-resource created successfully.");
+                info!("📦 Sub-resource created successfully.");
                 // create sub-resource
             } else {
                 // create resource
@@ -161,7 +201,10 @@ impl Config {
                     Ok(resource) => resource,
                     Err(e) => {
                         if e.error == "CONFLICT" {
-                            info!("Resource {} already exists, skipping!.", new_resource.name);
+                            info!(
+                                "📦 Resource {} already exists, skipping!.",
+                                new_resource.name
+                            );
                             continue;
                         }
                         return Err(e.into());
@@ -169,7 +212,7 @@ impl Config {
                 };
                 resource_id = resource.id;
 
-                info!("Resource created successfully.");
+                info!("📦 Resource created successfully.");
             }
 
             // create relatio between root user and resource
@@ -181,7 +224,10 @@ impl Config {
 
             create_relation(conn, new_relation).await?;
 
-            info!("Relation created successfully.");
+            info!(
+                "🔗 Relation between {} and root user created successfully.",
+                resource.name
+            );
         }
 
         Ok(())
@@ -189,10 +235,11 @@ impl Config {
 
     pub async fn create_roles(&self, conn: &mut AsyncPgConnection) -> anyhow::Result<()> {
         if self.roles.is_empty() {
-            info!("No role to create.");
+            info!("🧙 No roles to create.");
             return Ok(());
         }
         for role in &self.roles {
+            info!("🧙 Creating role {}", role.name);
             let privileges = Self::create_privileges_vec(role.privileges.clone());
             let new_role = NewRole {
                 name: role.name.clone(),
@@ -202,12 +249,12 @@ impl Config {
             let res = create_role(conn, new_role).await;
             if let Err(e) = res {
                 if e.error == "CONFLICT" {
-                    info!("Role {} already exists. skipping!", role.name);
+                    info!("🧙 Role {} already exists. skipping!", role.name);
                     continue;
                 }
                 return Err(e.into());
             }
-            info!("Role {} created successfully.", role.name);
+            info!("🧙 Role {} created successfully.", role.name);
         }
         Ok(())
     }

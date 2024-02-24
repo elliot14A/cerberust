@@ -11,7 +11,7 @@ use tracing::info;
 use crate::{api::init_routes, logger::logger};
 
 pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
-    let config = crate::config::Config::load()?;
+    let (config, default) = crate::config::Config::load()?;
 
     let default_http_port = config.config.port.clone();
     let default_addr = "0.0.0.0".to_string();
@@ -35,12 +35,21 @@ pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
 
     let app = app.nest("/api", routes).layer(logger());
 
-    // use emoji to make it stand out
-    info!("🛠 Creating resources and roles from cerberust.toml");
-    let mut conn = pool.get().await?;
-    let root_user_id = config.create_root_user(&mut conn).await?;
-    config.create_resources(root_user_id, &mut conn).await?;
-    config.create_roles(&mut conn).await?;
+    if !default {
+        info!("🛠 Creating resources and roles from cerberust.toml");
+        let mut conn = pool.get().await?;
+        let root_user_id = config.create_root_user(&mut conn).await?;
+        if root_user_id.is_none() {
+            info!("🚫 Root user not created. Skipping creating resources! ")
+        } else {
+            config
+                .create_resources(root_user_id.unwrap(), &mut conn)
+                .await?;
+        }
+        config.create_roles(&mut conn).await?;
+    } else {
+        info!("🛠 Cannot find cerberust.toml file. Using default configuration.");
+    }
 
     // build smtp service
     let smtp = crate::utils::smtp::SmtpService::new(config.config);
