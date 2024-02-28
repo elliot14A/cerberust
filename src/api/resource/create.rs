@@ -128,7 +128,7 @@ async fn create_resource_and_assign_role(
 
     let new_relation = NewRelation {
         user_id,
-        resource_id: resource.id,
+        object_id: resource.id,
         role_id,
     };
     create_relation(conn, new_relation).await?;

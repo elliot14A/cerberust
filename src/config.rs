@@ -219,7 +219,7 @@ impl Config {
             let new_relation = NewRelation {
                 user_id: root_user_id,
                 role_id,
-                resource_id,
+                object_id: resource_id,
             };
 
             create_relation(conn, new_relation).await?;

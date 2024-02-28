@@ -9,7 +9,7 @@ use crate::schema::relation;
 pub struct NewRelation {
     pub user_id: Uuid,
     pub role_id: Uuid,
-    pub resource_id: Uuid,
+    pub object_id: Uuid,
 }
 
 #[derive(Debug, Queryable, Selectable, Serialize, Clone)]
@@ -19,5 +19,5 @@ pub struct NewRelation {
 pub struct Relation {
     pub user_id: Uuid,
     pub role_id: Uuid,
-    pub resource_id: Uuid,
+    pub object_id: Uuid,
 }

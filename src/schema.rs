@@ -16,9 +16,9 @@ diesel::table! {
 }
 
 diesel::table! {
-    relation (user_id, resource_id, role_id) {
+    relation (user_id, object_id, role_id) {
         user_id -> Uuid,
-        resource_id -> Uuid,
+        object_id -> Uuid,
         role_id -> Uuid,
     }
 }
@@ -89,7 +89,6 @@ diesel::table! {
 }
 
 diesel::joinable!(refresh_token -> session (session_id));
-diesel::joinable!(relation -> resource (resource_id));
 diesel::joinable!(relation -> role (role_id));
 diesel::joinable!(relation -> user (user_id));
 diesel::joinable!(session -> user (user_id));

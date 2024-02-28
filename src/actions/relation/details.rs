@@ -12,7 +12,7 @@ pub async fn get_role_id_from_relation(
 ) -> Result<Option<Uuid>> {
     Ok(relation::table
         .filter(relation::user_id.eq(user_id))
-        .filter(relation::resource_id.eq(resource_id))
+        .filter(relation::object_id.eq(resource_id))
         .select(relation::role_id)
         .first(conn)
         .await
