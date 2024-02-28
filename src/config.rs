@@ -1,3 +1,4 @@
+use anyhow::anyhow;
 use std::env;
 
 use diesel_async::AsyncPgConnection;
@@ -15,6 +16,7 @@ use crate::{
     },
     models::{
         relation::NewRelation,
+        resource::NewResource,
         role::{NewRole, Privilege, PrivilegeVec},
         user::NewUser,
         user_role::NewUserRole,
@@ -55,12 +57,13 @@ pub struct Resource {
 pub struct Role {
     pub name: String,
     pub description: Option<String>,
-    pub privileges: Vec<String>,
+    pub privileges: Vec<Privilege>,
 }
 
 #[derive(Debug, Deserialize, Default, Clone)]
 pub struct Config {
-    pub config: ServerConfig,
+    #[serde(rename = "config")]
+    pub server_config: ServerConfig,
     #[serde(rename = "resource")]
     pub resources: Vec<Resource>,
     #[serde(rename = "role")]
@@ -152,85 +155,75 @@ impl Config {
             return Ok(());
         }
 
-        let role_id = get_role_id_by_name(conn, ROOT_ROLE).await?;
-        let role_id = role_id.unwrap();
+        let role_id = get_role_id_by_name(conn, ROOT_ROLE).await?.ok_or_else(|| {
+            error!("🚫 Root role not found.");
+            anyhow!("Root role not found")
+        })?;
 
         for resource in &self.resources {
             info!("📦 Creating resource: {}", resource.name);
-            let resource_id: Uuid;
-            if resource.parent.is_some() {
+
+            let resource_id = if let Some(parent_name) = &resource.parent {
                 let parent_resource_id =
-                    get_resource_id_by_name(conn, &resource.parent.clone().unwrap()).await?;
-                if parent_resource_id.is_none() {
-                    error!("📦 Parent resource not found.");
-                    continue;
+                    get_resource_id_by_name(conn, parent_name.as_str()).await?;
+                match parent_resource_id {
+                    Some(parent_id) => {
+                        Self::_create_resource(conn, resource, Some(parent_id)).await?
+                    }
+                    None => {
+                        error!("📦 Parent resource '{}' not found.", parent_name);
+                        continue;
+                    }
                 }
-                let new_resource = crate::models::resource::NewResource {
-                    name: resource.name.clone(),
-                    description: resource.description.clone(),
-                    parent_resource_id,
-                };
-                let resource = create_resource(conn, new_resource.clone()).await;
-                let resource = match resource {
-                    Ok(resource) => resource,
-                    Err(e) => {
-                        if e.error == "CONFLICT" {
-                            info!(
-                                "📦 Resource {} already exists, skipping!.",
-                                new_resource.name
-                            );
-                            continue;
-                        }
-                        return Err(e.into());
-                    }
-                };
-                resource_id = resource.id;
-
-                info!("📦 Sub-resource created successfully.");
-                // create sub-resource
             } else {
-                // create resource
-                let new_resource = crate::models::resource::NewResource {
-                    name: resource.name.clone(),
-                    description: resource.description.clone(),
-                    parent_resource_id: None,
-                };
-
-                let resource = create_resource(conn, new_resource.clone()).await;
-                let resource = match resource {
-                    Ok(resource) => resource,
-                    Err(e) => {
-                        if e.error == "CONFLICT" {
-                            info!(
-                                "📦 Resource {} already exists, skipping!.",
-                                new_resource.name
-                            );
-                            continue;
-                        }
-                        return Err(e.into());
-                    }
-                };
-                resource_id = resource.id;
-
-                info!("📦 Resource created successfully.");
-            }
-
-            // create relatio between root user and resource
-            let new_relation = NewRelation {
-                user_id: root_user_id,
-                role_id,
-                object_id: resource_id,
+                Self::_create_resource(conn, resource, None).await?
             };
 
-            create_relation(conn, new_relation).await?;
+            if let Some(id) = resource_id {
+                let new_relation = NewRelation {
+                    user_id: root_user_id,
+                    role_id,
+                    object_id: id,
+                };
 
-            info!(
-                "🔗 Relation between {} and root user created successfully.",
-                resource.name
-            );
+                create_relation(conn, new_relation).await?;
+
+                info!(
+                    "🔗 Relation between {} and root user created successfully.",
+                    resource.name
+                );
+            }
         }
 
         Ok(())
+    }
+
+    async fn _create_resource(
+        conn: &mut AsyncPgConnection,
+        resource: &Resource,
+        parent_id: Option<Uuid>,
+    ) -> anyhow::Result<Option<Uuid>> {
+        let new_resource = NewResource {
+            name: resource.name.clone(),
+            description: resource.description.clone(),
+            parent_resource_id: parent_id,
+        };
+
+        let resource = create_resource(conn, new_resource.clone()).await;
+        match resource {
+            Ok(resource) => Ok(Some(resource.id)),
+            Err(e) => {
+                if e.error == "CONFLICT" {
+                    info!(
+                        "📦 Resource {} already exists, skipping!",
+                        new_resource.name
+                    );
+                    Ok(None) // Return parent_id as resource_id
+                } else {
+                    Err(e.into())
+                }
+            }
+        }
     }
 
     pub async fn create_roles(&self, conn: &mut AsyncPgConnection) -> anyhow::Result<()> {
@@ -259,28 +252,32 @@ impl Config {
         Ok(())
     }
 
-    fn create_privileges_vec(privileges: Vec<String>) -> PrivilegeVec {
-        let mut privilege_vec = Vec::new();
-        privilege_vec.push(Privilege {
-            entity: RESOURCE.to_string(),
-            privileges: vec![],
-        });
-        privilege_vec.push(Privilege {
-            entity: ROLE.to_string(),
-            privileges: vec![],
-        });
+    fn create_privileges_vec(privileges: Vec<Privilege>) -> PrivilegeVec {
+        let mut privilege_vec = vec![
+            Privilege {
+                entity: RESOURCE.to_string(),
+                privileges: vec![],
+            },
+            Privilege {
+                entity: ROLE.to_string(),
+                privileges: vec![],
+            },
+        ];
 
-        privileges
-            .iter()
-            .for_each(|privilege| match privilege.as_str() {
-                CREATE | READ | UPDATE | DELETE => {
-                    privilege_vec[0].privileges.push(privilege.to_string());
+        for privilege in privileges {
+            let (target_index, allowed_privileges): (_, &[&str]) = match privilege.entity.as_str() {
+                "resource" => (0, &[CREATE, UPDATE, DELETE, READ]),
+                "role" => (1, &[REVOKE, GRANT, UPDATE]),
+                _ => continue, // Skip unknown entities
+            };
+
+            for privilege_name in privilege.privileges {
+                if allowed_privileges.contains(&privilege_name.as_str()) {
+                    privilege_vec[target_index].privileges.push(privilege_name);
                 }
-                GRANT | REVOKE => {
-                    privilege_vec[1].privileges.push(privilege.to_string());
-                }
-                _ => {}
-            });
+            }
+        }
+
         PrivilegeVec(privilege_vec)
     }
 }

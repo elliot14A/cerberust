@@ -1,19 +1,25 @@
 use std::sync::Arc;
 
 use axum::{Extension, Router};
-use diesel_async::pooled_connection::{bb8, AsyncDieselConnectionManager};
+use diesel_async::{
+    pooled_connection::{
+        bb8::{self, Pool},
+        AsyncDieselConnectionManager,
+    },
+    AsyncPgConnection,
+};
 use hyper::Method;
 use tokio::net::TcpListener;
 use tower_cookies::CookieManagerLayer;
 
 use tracing::info;
 
-use crate::{api::init_routes, logger::logger};
+use crate::{api::init_routes, config::Config, logger::logger};
 
 pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
-    let (config, default) = crate::config::Config::load()?;
+    let (config, default) = Config::load()?;
 
-    let default_http_port = config.config.port.clone();
+    let default_http_port = config.server_config.port.clone();
     let default_addr = "0.0.0.0".to_string();
     let default_addr = format!("{}:{}", default_addr, default_http_port);
 
@@ -22,10 +28,10 @@ pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
         .allow_origin(tower_http::cors::Any)
         .allow_credentials(false);
 
-    let app = Router::new().layer(cors);
+    let app = Router::new().layer(cors).layer(logger());
 
     // connect to database
-    let database_url = config.config.database_url.clone();
+    let database_url = config.server_config.database_url.clone();
 
     let db_config =
         AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(&database_url);
@@ -33,26 +39,16 @@ pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
 
     let routes = init_routes(pool.clone());
 
-    let app = app.nest("/api", routes).layer(logger());
+    let app = app.nest("/api", routes);
 
     if !default {
-        info!("🛠 Creating resources and roles from cerberust.toml");
-        let mut conn = pool.get().await?;
-        let root_user_id = config.create_root_user(&mut conn).await?;
-        if root_user_id.is_none() {
-            info!("🚫 Root user not created. Skipping creating resources! ")
-        } else {
-            config
-                .create_resources(root_user_id.unwrap(), &mut conn)
-                .await?;
-        }
-        config.create_roles(&mut conn).await?;
+        initialize_resources_roles(&config, &pool).await?;
     } else {
         info!("🛠 Cannot find cerberust.toml file. Using default configuration.");
     }
 
     // build smtp service
-    let smtp = crate::utils::smtp::SmtpService::new(config.config);
+    let smtp = crate::utils::smtp::SmtpService::new(config.server_config);
 
     let app = app
         .layer(CookieManagerLayer::new())
@@ -61,4 +57,20 @@ pub async fn build_http_server() -> anyhow::Result<(TcpListener, Router)> {
     let listner = TcpListener::bind(default_addr.clone()).await?;
     info!("🚀 Listening on {}", default_addr);
     Ok((listner, app))
+}
+
+async fn initialize_resources_roles(
+    config: &Config,
+    pool: &Pool<AsyncPgConnection>,
+) -> anyhow::Result<()> {
+    info!("🛠 Creating resources and roles from cerberust.toml");
+    let mut conn = pool.get().await?;
+    let root_user_id = config.create_root_user(&mut conn).await?;
+    if let Some(root_user_id) = root_user_id {
+        config.create_resources(root_user_id, &mut conn).await?;
+    } else {
+        info!("🚫 Root user not created. Skipping creating resources!");
+    }
+    config.create_roles(&mut conn).await?;
+    Ok(())
 }
