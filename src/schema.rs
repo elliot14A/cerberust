@@ -40,6 +40,7 @@ diesel::table! {
         name -> Text,
         description -> Nullable<Text>,
         privileges -> Jsonb,
+        is_default -> Bool,
         created_at -> Timestamptz,
         updated_at -> Nullable<Timestamptz>,
     }

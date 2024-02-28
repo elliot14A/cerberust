@@ -37,6 +37,7 @@ pub struct NewRole {
     #[validate(length(min = 8))]
     pub description: Option<String>,
     pub privileges: PrivilegeVec,
+    pub is_default: bool,
 }
 
 #[derive(Debug, Queryable, Selectable, Serialize, Clone)]
@@ -47,6 +48,7 @@ pub struct Role {
     pub name: String,
     pub description: Option<String>,
     pub privileges: PrivilegeVec,
+    pub is_default: bool,
     pub created_at: DateTime<Utc>,
     pub updated_at: Option<DateTime<Utc>>,
 }

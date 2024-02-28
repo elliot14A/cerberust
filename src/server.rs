@@ -67,7 +67,7 @@ async fn initialize_resources_roles(
     let mut conn = pool.get().await?;
     let root_user_id = config.create_root_user(&mut conn).await?;
     if let Some(root_user_id) = root_user_id {
-        config.create_resources(root_user_id, &mut conn).await?;
+        config.create_resources(&mut conn, root_user_id).await?;
     } else {
         info!("🚫 Root user not created. Skipping creating resources!");
     }

@@ -147,8 +147,8 @@ impl Config {
 
     pub async fn create_resources(
         &self,
-        root_user_id: Uuid,
         conn: &mut AsyncPgConnection,
+        root_user_id: Uuid,
     ) -> anyhow::Result<()> {
         if self.resources.is_empty() {
             info!("📦 No resources to create.");
@@ -180,6 +180,7 @@ impl Config {
             };
 
             if let Some(id) = resource_id {
+                info!("📦 Resource {} created successfully!", resource.name);
                 let new_relation = NewRelation {
                     user_id: root_user_id,
                     role_id,
@@ -238,6 +239,7 @@ impl Config {
                 name: role.name.clone(),
                 description: role.description.clone(),
                 privileges,
+                is_default: true,
             };
             let res = create_role(conn, new_role).await;
             if let Err(e) = res {
@@ -267,7 +269,7 @@ impl Config {
         for privilege in privileges {
             let (target_index, allowed_privileges): (_, &[&str]) = match privilege.entity.as_str() {
                 "resource" => (0, &[CREATE, UPDATE, DELETE, READ]),
-                "role" => (1, &[REVOKE, GRANT, UPDATE]),
+                "role" => (1, &[REVOKE, GRANT, UPDATE, DELETE]),
                 _ => continue, // Skip unknown entities
             };
 
