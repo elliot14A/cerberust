@@ -37,7 +37,7 @@ pub async fn update_handler(
         .await
         .map_err(|e| ApiErrResp::internal_server_error(e.to_string()))?;
 
-    if !check_has_privilege(&mut conn, user_id, id, UPDATE, RESOURCE).await? {
+    if !check_has_privilege(&mut conn, user_id, id, UPDATE, RESOURCE, None, None).await? {
         Err(ApiErrResp {
             code: StatusCode::FORBIDDEN,
             error: "Forbidden".to_string(),

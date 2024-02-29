@@ -1,6 +1,7 @@
 mod auth;
 mod password;
 mod resource;
+mod role;
 mod session;
 mod user;
 
@@ -13,7 +14,7 @@ use validator::Validate;
 
 use self::{
     auth::init_auth_routes, password::init_password_routes, resource::init_resource_routes,
-    session::init_session_routes, user::init_user_routes,
+    role::init_role_routes, session::init_session_routes, user::init_user_routes,
 };
 
 pub fn init_routes(pool: Pool<AsyncPgConnection>) -> Router {
@@ -24,6 +25,7 @@ pub fn init_routes(pool: Pool<AsyncPgConnection>) -> Router {
         .nest("/user", init_user_routes())
         .nest("/session", init_session_routes())
         .nest("/resource", init_resource_routes())
+        .nest("/role", init_role_routes())
         .with_state(Arc::new(pool))
 }
 

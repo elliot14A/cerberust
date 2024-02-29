@@ -27,7 +27,7 @@ use crate::{
 };
 
 #[derive(Deserialize, Validate)]
-pub(crate) struct RequestBody {
+pub struct RequestBody {
     pub parent_resource_id: Option<Uuid>,
     #[validate(length(min = 3, max = 24))]
     pub name: String,
@@ -81,10 +81,16 @@ pub async fn create_child_resource_handler(
 
     let parent_resource_id = new_resource.parent_resource_id.unwrap();
 
-    let has_privilege =
-        check_has_privilege(&mut conn, user_id, parent_resource_id, CREATE, RESOURCE).await?;
-
-    println!("=====> {}", has_privilege);
+    let has_privilege = check_has_privilege(
+        &mut conn,
+        user_id,
+        parent_resource_id,
+        CREATE,
+        RESOURCE,
+        None,
+        None,
+    )
+    .await?;
 
     if !has_privilege {
         return Err(ApiErrResp {

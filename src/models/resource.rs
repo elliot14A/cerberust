@@ -1,13 +1,13 @@
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use uuid::Uuid;
 
 use crate::schema::resource;
 
 use super::role::PrivilegeVec;
 
-#[derive(Debug, Insertable, Deserialize, Clone)]
+#[derive(Debug, Insertable, Clone)]
 #[diesel(table_name = resource)]
 pub struct NewResource {
     pub parent_resource_id: Option<Uuid>,

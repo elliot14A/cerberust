@@ -25,7 +25,8 @@ pub async fn delete_resource_hadler(
         .await
         .map_err(|e| ApiErrResp::internal_server_error(e.to_string()))?;
 
-    let has_privilege = check_has_privilege(&mut conn, user_id, id, DELETE, RESOURCE).await?;
+    let has_privilege =
+        check_has_privilege(&mut conn, user_id, id, DELETE, RESOURCE, None, None).await?;
 
     if !has_privilege {
         return Err(ApiErrResp::forbidden());

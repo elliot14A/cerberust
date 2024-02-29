@@ -46,7 +46,6 @@ pub async fn get_user_resources(
         .select((resource::all_columns, role::all_columns))
         .load(conn)
         .await?;
-    println!("{:?}", result);
     let role_resources = result
         .into_iter()
         .map(|(resource, role)| RoleResource {

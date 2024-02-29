@@ -17,12 +17,12 @@ use crate::{
     models::{
         relation::NewRelation,
         resource::NewResource,
-        role::{NewRole, Privilege, PrivilegeVec},
+        role::{NewRole, Privilege},
         user::NewUser,
         user_role::NewUserRole,
-        CREATE, DELETE, GRANT, READ, RESOURCE, REVOKE, ROLE, ROOT_ROLE, UPDATE,
+        ROOT_ROLE,
     },
-    utils::hash::hash_password,
+    utils::{hash::hash_password, helper::filter_privileges},
 };
 
 #[derive(Debug, Deserialize, Clone)]
@@ -234,7 +234,7 @@ impl Config {
         }
         for role in &self.roles {
             info!("🧙 Creating role {}", role.name);
-            let privileges = Self::create_privileges_vec(role.privileges.clone());
+            let privileges = filter_privileges(role.privileges.clone());
             let new_role = NewRole {
                 name: role.name.clone(),
                 description: role.description.clone(),
@@ -252,34 +252,5 @@ impl Config {
             info!("🧙 Role {} created successfully.", role.name);
         }
         Ok(())
-    }
-
-    fn create_privileges_vec(privileges: Vec<Privilege>) -> PrivilegeVec {
-        let mut privilege_vec = vec![
-            Privilege {
-                entity: RESOURCE.to_string(),
-                privileges: vec![],
-            },
-            Privilege {
-                entity: ROLE.to_string(),
-                privileges: vec![],
-            },
-        ];
-
-        for privilege in privileges {
-            let (target_index, allowed_privileges): (_, &[&str]) = match privilege.entity.as_str() {
-                "resource" => (0, &[CREATE, UPDATE, DELETE, READ]),
-                "role" => (1, &[REVOKE, GRANT, UPDATE, DELETE]),
-                _ => continue, // Skip unknown entities
-            };
-
-            for privilege_name in privilege.privileges {
-                if allowed_privileges.contains(&privilege_name.as_str()) {
-                    privilege_vec[target_index].privileges.push(privilege_name);
-                }
-            }
-        }
-
-        PrivilegeVec(privilege_vec)
     }
 }

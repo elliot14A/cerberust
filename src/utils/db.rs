@@ -8,7 +8,7 @@ use crate::{
         role::details::get_privilegs_by_role_id,
     },
     error::Result,
-    models::role::PrivilegeVec,
+    models::role::{Privilege, PrivilegeVec},
 };
 
 // firstly check relation table for user and resource and get the role_id
@@ -26,6 +26,8 @@ pub async fn check_has_privilege(
     resource_id: Uuid,
     privilege: &str,
     entity: &str,
+    callback: Option<fn(Vec<Privilege>, Vec<Privilege>) -> bool>,
+    callback_args: Option<Vec<Privilege>>,
 ) -> Result<bool> {
     let role_id = get_role_id_from_relation(conn, user_id, resource_id).await?;
 
@@ -33,11 +35,18 @@ pub async fn check_has_privilege(
         // TODO: this query can be optimized
         let PrivilegeVec(privileges) = get_privilegs_by_role_id(conn, role_id).await?;
 
+        let callback_bool = if let Some(callback) = callback {
+            let callback_args = callback_args.unwrap();
+            callback(privileges.clone(), callback_args)
+        } else {
+            true
+        };
+
         return Ok(privileges.iter().any(|p| {
             p.entity == entity
                 && (p.privileges.contains(&privilege.to_owned())
                     || p.privileges.contains(&"*".to_string()))
-        }));
+        }) && callback_bool);
     }
 
     let parent_resource_id = get_parent_resource_id(conn, resource_id).await?;
@@ -49,6 +58,8 @@ pub async fn check_has_privilege(
             parent_resource_id.unwrap(),
             privilege,
             entity,
+            callback,
+            callback_args,
         )
         .await;
     }

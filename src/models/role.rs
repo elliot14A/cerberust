@@ -6,13 +6,12 @@ use diesel::{
     prelude::*,
     sql_types::Jsonb,
 };
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use uuid::Uuid;
-use validator::Validate;
 
 use crate::schema::role;
 
-#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Default, Clone, PartialEq)]
 pub struct Privilege {
     pub entity: String,
     pub privileges: Vec<String>,
@@ -29,12 +28,10 @@ impl FromSql<Jsonb, Pg> for PrivilegeVec {
     }
 }
 
-#[derive(Debug, Insertable, Validate, Deserialize, Clone)]
+#[derive(Debug, Insertable, Clone)]
 #[diesel(table_name = role)]
 pub struct NewRole {
-    #[validate(length(min = 3, max = 24))]
     pub name: String,
-    #[validate(length(min = 8))]
     pub description: Option<String>,
     pub privileges: PrivilegeVec,
     pub is_default: bool,
