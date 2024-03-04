@@ -71,9 +71,6 @@ smtp_host = "mailhog"
 # SMTP port for sending verification emails
 smtp_port = "1025"
 
-# Define resources and roles only if you set up a root user
-# Pass root user and password as environment variables
-
 [[resource]]
 name = "Book Vault"
 description = "A place to store your books"
