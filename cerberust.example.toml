@@ -1,0 +1,38 @@
+[config]
+port = "8080"
+database_url = "postgres://postgres:postgres@postgres/cerberust"
+smtp_host = "mailhog"
+smtp_port = "1025"
+
+### you can create resources only if you set up a root user
+### pass root user and password as environment variables
+[[resource]]
+name = "Book Vault"
+description = "A place to store your books"
+
+[[resource]]
+name = "Into the Wild"
+description = "A book about a guy who goes into the wild"
+parent = "Book Vault"
+
+[[resource]]
+name = "Into Thin Air"
+description = "A book about a guy who goes up a mountain"
+parent = "Book Vault"
+
+[[resource]]
+name = "The Hobbit"
+description = "A book about a hobbit"
+parent = "Book Vault"
+
+[[role]]
+name = "Reader"
+privileges = [{ entity = "resource", privilege = ["read"] }]
+description = "Can read books"
+
+[[role]]
+name = "Writer"
+privileges = [{ entity = "resource", privilege = ["read", "create"] }]
+description = "Can read and create new books in book vault"
+
+### we dont need a admin because we have a default admin role called root
