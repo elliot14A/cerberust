@@ -22,3 +22,4 @@ keys
 .env
 cerberust.toml
 credentials.env
+.DS_Store
