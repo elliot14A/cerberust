@@ -29,5 +29,5 @@ pub fn init_resource_routes() -> Router<Arc<Pool<AsyncPgConnection>>> {
                 .get(details_handler)
                 .patch(update_handler),
         )
-        .route("/child", post(create_child_resource_handler))
+        .route("/:id/child", post(create_child_resource_handler))
 }

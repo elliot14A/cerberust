@@ -1,6 +1,11 @@
 use std::sync::Arc;
 
-use axum::{extract::State, http, response::IntoResponse, Json};
+use axum::{
+    extract::{Path, State},
+    http,
+    response::IntoResponse,
+    Json,
+};
 use diesel_async::{
     pooled_connection::bb8::Pool, scoped_futures::ScopedFutureExt, AsyncConnection,
     AsyncPgConnection,
@@ -28,7 +33,6 @@ use crate::{
 
 #[derive(Deserialize, Validate)]
 pub struct RequestBody {
-    pub parent_resource_id: Option<Uuid>,
     #[validate(length(min = 3, max = 24))]
     pub name: String,
     #[validate(length(min = 3, max = 255))]
@@ -66,10 +70,11 @@ pub async fn create_resource_handler(
 pub async fn create_child_resource_handler(
     State(pool): State<Arc<Pool<AsyncPgConnection>>>,
     Authenticated(Session { user_id, .. }): Authenticated,
+    Path(parent_resource_id): Path<Uuid>,
     FromValidatedJson(new_resource): FromValidatedJson<RequestBody>,
 ) -> Result<impl IntoResponse> {
     let new_resource = NewResource {
-        parent_resource_id: new_resource.parent_resource_id,
+        parent_resource_id: Some(parent_resource_id),
         name: new_resource.name,
         description: new_resource.description,
     };
