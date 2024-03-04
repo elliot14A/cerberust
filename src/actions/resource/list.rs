@@ -44,6 +44,7 @@ pub async fn get_user_resources(
         .inner_join(resource::table.on(relation::object_id.eq(resource::id)))
         .inner_join(role::table.on(relation::role_id.eq(role::id)))
         .select((resource::all_columns, role::all_columns))
+        .filter(resource::parent_resource_id.is_null())
         .load(conn)
         .await?;
     let role_resources = result
@@ -59,3 +60,20 @@ pub async fn get_user_resources(
         .collect();
     Ok(role_resources)
 }
+
+//
+// #[async_recursion]
+// pub async fn get_all_child_resource(
+//     conn: &mut AsyncPgConnection,
+//     parent_resources: Vec<Uuid>,
+//     result: Vec<Resource>,
+// ) -> Result<Vec<Resource>> {
+//     for parent_resource in parent_resources {
+//         let child_resources = get_child_resources(conn, parent_resource).await?;
+//         if child_resources.is_empty() {
+//             continue;
+//         }
+//     }
+//
+//     return Ok(result);
+// }

@@ -85,6 +85,11 @@ impl From<Error> for ApiErrResp {
                     error: "CONFLICT".to_string(),
                     message: _e.message().to_string(),
                 },
+                diesel::result::DatabaseErrorKind::ForeignKeyViolation => ApiErrResp {
+                    code: http::StatusCode::BAD_REQUEST,
+                    error: "BAD_REQUEST".to_string(),
+                    message: _e.message().to_string(),
+                },
                 _ => ApiErrResp::internal_server_error(_e.message().to_string()),
             },
             _ => ApiErrResp::internal_server_error(e.to_string()),

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
-    routing::{delete, get, patch, post},
+    routing::{delete, post},
     Router,
 };
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
@@ -22,10 +22,12 @@ mod update;
 
 pub fn init_resource_routes() -> Router<Arc<Pool<AsyncPgConnection>>> {
     Router::new()
-        .route("/", post(create_resource_handler))
-        .route("/", get(list))
-        .route("/:id", delete(delete_resource_hadler))
-        .route("/:id", get(details_handler))
-        .route("/:id", patch(update_handler))
+        .route("/", post(create_resource_handler).get(list))
+        .route(
+            "/:id",
+            delete(delete_resource_hadler)
+                .get(details_handler)
+                .patch(update_handler),
+        )
         .route("/child", post(create_child_resource_handler))
 }

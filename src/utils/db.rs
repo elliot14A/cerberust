@@ -4,11 +4,15 @@ use uuid::Uuid;
 
 use crate::{
     actions::{
-        relation::details::get_role_id_from_relation, resource::details::get_parent_resource_id,
-        role::details::get_privilegs_by_role_id,
+        relation::details::get_role_id_from_relation,
+        resource::details::get_parent_resource_id,
+        role::details::{get_privilegs_by_role_id, get_role_id_by_name},
     },
     error::Result,
-    models::role::{Privilege, PrivilegeVec},
+    models::{
+        role::{Privilege, PrivilegeVec},
+        RESOURCE, ROLE, ROOT_ROLE,
+    },
 };
 
 // firstly check relation table for user and resource and get the role_id
@@ -64,5 +68,59 @@ pub async fn check_has_privilege(
         .await;
     }
 
+    Ok(false)
+}
+
+pub fn check_privileges_callback() -> fn(Vec<Privilege>, Vec<Privilege>) -> bool {
+    let callback = |privileges: Vec<Privilege>, new_privileges: Vec<Privilege>| {
+        let is_subset = privileges
+            .iter()
+            .all(|privilege| privilege.privileges.clone().pop() == Some("*".to_string()));
+
+        if is_subset {
+            return true;
+        }
+
+        let new_role_privileges = new_privileges.iter().find(|p| p.entity == ROLE);
+        let user_role_privileges = privileges.iter().find(|p| p.entity == ROLE);
+        let new_resource_privileges = new_privileges.iter().find(|p| p.entity == RESOURCE);
+        let user_resource_privileges = privileges.iter().find(|p| p.entity == RESOURCE);
+
+        // check "*" cases
+        let is_role_privilege_subset = match (new_role_privileges, user_role_privileges) {
+            (Some(new), Some(user)) => {
+                user.privileges.clone().pop() == Some("*".to_string())
+                    || new.privileges == user.privileges
+            }
+            (None, Some(_)) => true,
+            _ => false,
+        };
+
+        let is_resource_privilege_subset = match (new_resource_privileges, user_resource_privileges)
+        {
+            (Some(new), Some(user)) => {
+                user.privileges.clone().pop() == Some("*".to_string())
+                    || new.privileges == user.privileges
+            }
+            (None, Some(_)) => true,
+            _ => false,
+        };
+
+        is_resource_privilege_subset && is_role_privilege_subset
+    };
+
+    callback
+}
+
+pub async fn check_user_is_root(
+    conn: &mut AsyncPgConnection,
+    user_id: Uuid,
+    object_id: Uuid,
+) -> Result<bool> {
+    let role = get_role_id_from_relation(conn, user_id, object_id).await?;
+    if let Some(role) = role {
+        let root = get_role_id_by_name(conn, ROOT_ROLE).await?.unwrap();
+        return Ok(role == root);
+    }
     Ok(false)
 }

@@ -7,10 +7,10 @@ use crate::error::{ApiErrResp, Result};
 use crate::extractors::authenticator::Authenticated;
 use crate::extractors::FromValidatedJson;
 use crate::models::relation::NewRelation;
-use crate::models::role::{NewRole, Privilege, PrivilegeVec, Role};
+use crate::models::role::{NewRole, PrivilegeVec, Role};
 use crate::models::session::Session;
-use crate::models::{CREATE, RESOURCE, ROLE, ROOT_ROLE};
-use crate::utils::db::check_has_privilege;
+use crate::models::{CREATE, ROLE, ROOT_ROLE};
+use crate::utils::db::{check_has_privilege, check_privileges_callback};
 use crate::utils::helper::filter_privileges;
 use axum::extract::State;
 use axum::response::IntoResponse;
@@ -44,43 +44,7 @@ pub async fn create_custom_role_handler(
         .await
         .map_err(|e| ApiErrResp::internal_server_error(e.to_string()))?;
 
-    let callback = |privileges: Vec<Privilege>, new_privileges: Vec<Privilege>| {
-        let is_subset = privileges
-            .iter()
-            .all(|privilege| privilege.privileges.clone().pop() == Some("*".to_string()));
-
-        if is_subset {
-            return true;
-        }
-
-        let new_role_privileges = new_privileges.iter().find(|p| p.entity == ROLE);
-        let user_role_privileges = privileges.iter().find(|p| p.entity == ROLE);
-        let new_resource_privileges = new_privileges.iter().find(|p| p.entity == RESOURCE);
-        let user_resource_privileges = privileges.iter().find(|p| p.entity == RESOURCE);
-
-        // check "*" cases
-        let is_role_privilege_subset = match (new_role_privileges, user_role_privileges) {
-            (Some(new), Some(user)) => {
-                user.privileges.clone().pop() == Some("*".to_string())
-                    || new.privileges == user.privileges
-            }
-            (None, Some(_)) => true,
-            _ => false,
-        };
-
-        let is_resource_privilege_subset = match (new_resource_privileges, user_resource_privileges)
-        {
-            (Some(new), Some(user)) => {
-                user.privileges.clone().pop() == Some("*".to_string())
-                    || new.privileges == user.privileges
-            }
-            (None, Some(_)) => true,
-            _ => false,
-        };
-
-        is_resource_privilege_subset && is_role_privilege_subset
-    };
-
+    let callback = check_privileges_callback();
     let privileges = filter_privileges(new_role.privileges.0);
 
     let has_privilege = check_has_privilege(
