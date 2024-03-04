@@ -2,7 +2,7 @@
 
 ### About the Project
 
-Cerberust is a formidable authentication server written in Rust, designed to be the vigilant guardian of your application's security. Built with a focus on speed and advanced security measures, Cerberust ensures a seamless and protected authentication experience. Leveraging JSON Web Tokens (JWT) for authentication, this server provides a reliable and efficient solution for user authentication. 
+Cerberust is a reliable Rust authentication server, safeguards your application effortlessly. Using JSON Web Tokens (JWT) for seamless logins, it also offers hierarchical resource management and role-based access controls, ensuring security without the hassle of complex setups.
 
 ### Tech Stack
 - Rust Axum
