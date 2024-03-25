@@ -81,21 +81,11 @@ diesel::table! {
     }
 }
 
-diesel::table! {
-    user_role (id) {
-        id -> Uuid,
-        user_id -> Uuid,
-        role_id -> Uuid,
-    }
-}
-
 diesel::joinable!(refresh_token -> session (session_id));
 diesel::joinable!(relation -> role (role_id));
 diesel::joinable!(relation -> user (user_id));
 diesel::joinable!(session -> user (user_id));
 diesel::joinable!(token -> user (user_id));
-diesel::joinable!(user_role -> role (role_id));
-diesel::joinable!(user_role -> user (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     refresh_token,
@@ -105,5 +95,4 @@ diesel::allow_tables_to_appear_in_same_query!(
     session,
     token,
     user,
-    user_role,
 );

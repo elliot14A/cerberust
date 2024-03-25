@@ -17,7 +17,7 @@ use validator::Validate;
 use crate::{
     actions::{
         relation::create::create_relation, resource::create::create_resource,
-        role::details::get_role_id_by_name, user_role::create::create_user_role,
+        role::details::get_role_id_by_name,
     },
     error::{ApiErrResp, Result},
     extractors::{authenticator::Authenticated, FromValidatedJson},
@@ -25,7 +25,6 @@ use crate::{
         relation::NewRelation,
         resource::{NewResource, Resource},
         session::Session,
-        user_role::NewUserRole,
         CREATE, RESOURCE, ROOT_ROLE,
     },
     utils::db::check_has_privilege,
@@ -133,9 +132,6 @@ async fn create_resource_and_assign_role(
     }
 
     let role_id = role_id.unwrap();
-
-    let new_user_role = NewUserRole { user_id, role_id };
-    create_user_role(conn, new_user_role).await?;
 
     let new_relation = NewRelation {
         user_id,

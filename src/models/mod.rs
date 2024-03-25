@@ -5,7 +5,6 @@ pub mod role;
 pub mod session;
 pub mod token;
 pub mod user;
-pub mod user_role;
 
 // default role
 pub const ROOT_ROLE: &str = "root";

@@ -12,14 +12,12 @@ use crate::{
         resource::{create::create_resource, details::get_resource_id_by_name},
         role::{create::create_role, details::get_role_id_by_name},
         user::{create::create_user, details::get_user_by_email, update::update_email_verified},
-        user_role::create::create_user_role,
     },
     models::{
         relation::NewRelation,
         resource::NewResource,
         role::{NewRole, Privilege},
         user::NewUser,
-        user_role::NewUserRole,
         ROOT_ROLE,
     },
     utils::{hash::hash_password, helper::filter_privileges},
@@ -129,18 +127,6 @@ impl Config {
 
         // update the user email_verified to true
         update_email_verified(conn, root_user.id).await?;
-
-        let role_id = get_role_id_by_name(conn, ROOT_ROLE).await?;
-
-        let role_id = role_id.unwrap();
-
-        let new_user_role = NewUserRole {
-            user_id: root_user.id,
-            role_id: role_id.clone(),
-        };
-
-        create_user_role(conn, new_user_role).await?;
-        info!("🔑 Root user created");
 
         Ok(Some(root_user.id))
     }
