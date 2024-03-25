@@ -2,7 +2,7 @@ version: '3'
 
 services:
   postgres:
-    image: postgres:11.7-alpine
+    image: postgres:16.2-alpine3.19
     ports:
       - "5432:5432"
     volumes:
@@ -37,8 +37,8 @@ services:
     volumes:
       - ./volumes/keys:/app/keys
       - ./cerberust.toml:/app/cerberust.toml
-    env_file:
-      - credentials.env
+    # env_file:
+    #   - credentials.env
     develop:
       watch:
         - action: rebuild
