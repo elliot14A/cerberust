@@ -48,3 +48,14 @@ pub async fn get_user_resources(
         .collect();
     Ok(role_resources)
 }
+
+pub async fn get_resource_children(
+    conn: &mut AsyncPgConnection,
+    resource_id: Uuid,
+) -> Result<Vec<Resource>> {
+    let result: Vec<Resource> = resource::table
+        .filter(resource::parent_resource_id.eq(resource_id))
+        .load(conn)
+        .await?;
+    Ok(result)
+}
