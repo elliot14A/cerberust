@@ -34,6 +34,7 @@ pub struct NewRole {
     pub name: String,
     pub description: Option<String>,
     pub privileges: PrivilegeVec,
+    pub resource_id: Option<Uuid>,
     pub is_default: bool,
 }
 
@@ -46,6 +47,7 @@ pub struct Role {
     pub description: Option<String>,
     pub privileges: PrivilegeVec,
     pub is_default: bool,
+    pub resource_id: Option<Uuid>,
     pub created_at: DateTime<Utc>,
     pub updated_at: Option<DateTime<Utc>>,
 }

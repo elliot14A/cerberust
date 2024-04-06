@@ -30,7 +30,7 @@ pub async fn get_user_resources(
 ) -> Result<Vec<RoleResource>> {
     let result: Vec<(Resource, Role)> = relation::table
         .filter(relation::user_id.eq(user_id))
-        .inner_join(resource::table.on(relation::object_id.eq(resource::id)))
+        .inner_join(resource::table.on(relation::resource_id.eq(resource::id)))
         .inner_join(role::table.on(relation::role_id.eq(role::id)))
         .select((resource::all_columns, role::all_columns))
         .load(conn)

@@ -170,7 +170,7 @@ impl Config {
                 let new_relation = NewRelation {
                     user_id: root_user_id,
                     role_id,
-                    object_id: id,
+                    resource_id: id,
                 };
 
                 create_relation(conn, new_relation).await?;
@@ -225,6 +225,7 @@ impl Config {
                 name: role.name.clone(),
                 description: role.description.clone(),
                 privileges,
+                resource_id: None,
                 is_default: true,
             };
             let res = create_role(conn, new_role).await;

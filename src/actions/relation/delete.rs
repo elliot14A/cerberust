@@ -17,7 +17,7 @@ pub async fn delete_relation(
     if let Some(_) = role_id {
         diesel::delete(
             relation::table.filter(
-                relation::object_id
+                relation::resource_id
                     .eq(object_id)
                     .and(relation::user_id.eq(user_id)),
             ),

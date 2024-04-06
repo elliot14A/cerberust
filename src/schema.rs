@@ -16,9 +16,9 @@ diesel::table! {
 }
 
 diesel::table! {
-    relation (user_id, object_id, role_id) {
+    relation (user_id, resource_id) {
         user_id -> Uuid,
-        object_id -> Uuid,
+        resource_id -> Uuid,
         role_id -> Uuid,
     }
 }
@@ -41,6 +41,7 @@ diesel::table! {
         description -> Nullable<Text>,
         privileges -> Jsonb,
         is_default -> Bool,
+        resource_id -> Nullable<Uuid>,
         created_at -> Timestamptz,
         updated_at -> Nullable<Timestamptz>,
     }
@@ -82,8 +83,10 @@ diesel::table! {
 }
 
 diesel::joinable!(refresh_token -> session (session_id));
+diesel::joinable!(relation -> resource (resource_id));
 diesel::joinable!(relation -> role (role_id));
 diesel::joinable!(relation -> user (user_id));
+diesel::joinable!(role -> resource (resource_id));
 diesel::joinable!(session -> user (user_id));
 diesel::joinable!(token -> user (user_id));
 

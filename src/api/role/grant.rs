@@ -77,7 +77,7 @@ pub async fn grant_role_handler(
     let new_relation = NewRelation {
         user_id: assignee,
         role_id,
-        object_id: resource_id,
+        resource_id,
     };
 
     let relation = create_relation(&mut conn, new_relation).await?;

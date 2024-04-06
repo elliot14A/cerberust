@@ -15,6 +15,7 @@ pub async fn create_role(conn: &mut AsyncPgConnection, new_role: NewRole) -> Res
             role::description.eq(new_role.description),
             role::privileges.eq(privileges),
             role::is_default.eq(new_role.is_default),
+            role::resource_id.eq(new_role.resource_id),
         ))
         .get_result::<Role>(conn)
         .await?)

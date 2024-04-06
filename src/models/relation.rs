@@ -9,15 +9,15 @@ use crate::schema::relation;
 pub struct NewRelation {
     pub user_id: Uuid,
     pub role_id: Uuid,
-    pub object_id: Uuid,
+    pub resource_id: Uuid,
 }
 
 #[derive(Debug, Queryable, Selectable, Serialize, Clone)]
 #[diesel(table_name = relation)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-#[diesel(primary_key(user_id, role_id, resource_id))]
+#[diesel(primary_key(user_id, resource_id))]
 pub struct Relation {
     pub user_id: Uuid,
     pub role_id: Uuid,
-    pub object_id: Uuid,
+    pub resource_id: Uuid,
 }

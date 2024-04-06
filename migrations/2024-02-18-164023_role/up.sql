@@ -4,6 +4,7 @@ create table "role" (
   description text default null,
   privileges jsonb default '[]' not null,
   is_default bool default false not null,
+  resource_id uuid references resource (id) on delete cascade default null,
   created_at timestamptz default now () not null,
   updated_at timestamptz
 );
