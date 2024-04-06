@@ -4,14 +4,13 @@ use uuid::Uuid;
 
 use crate::{
     actions::{
-        relation::details::get_role_id_from_relation,
-        resource::details::get_parent_resource_id,
-        role::details::{get_privilegs_by_role_id, get_role_id_by_name},
+        relation::details::get_role_id_from_relation, resource::details::get_parent_resource_id,
+        role::details::get_privilegs_by_role_id,
     },
     error::Result,
     models::{
         role::{Privilege, PrivilegeVec},
-        RESOURCE, ROLE, ROOT_ROLE,
+        RESOURCE, ROLE,
     },
 };
 
@@ -112,15 +111,15 @@ pub fn check_privileges_callback() -> fn(Vec<Privilege>, Vec<Privilege>) -> bool
     callback
 }
 
-pub async fn check_user_is_root(
-    conn: &mut AsyncPgConnection,
-    user_id: Uuid,
-    object_id: Uuid,
-) -> Result<bool> {
-    let role = get_role_id_from_relation(conn, user_id, object_id).await?;
-    if let Some(role) = role {
-        let root = get_role_id_by_name(conn, ROOT_ROLE).await?.unwrap();
-        return Ok(role == root);
-    }
-    Ok(false)
-}
+// pub async fn check_user_is_root(
+//     conn: &mut AsyncPgConnection,
+//     user_id: Uuid,
+//     object_id: Uuid,
+// ) -> Result<bool> {
+//     let role = get_role_id_from_relation(conn, user_id, object_id).await?;
+//     if let Some(role) = role {
+//         let root = get_role_id_by_name(conn, ROOT_ROLE).await?.unwrap();
+//         return Ok(role == root);
+//     }
+//     Ok(false)
+// }

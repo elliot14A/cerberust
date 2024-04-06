@@ -5,7 +5,7 @@ use crate::{
     error::{ApiErrResp, Result},
     extractors::authenticator::Authenticated,
     models::{relation::NewRelation, session::Session},
-    utils::db::{check_privileges_callback, check_user_is_root},
+    utils::db::check_privileges_callback,
 };
 use axum::{extract::State, response::IntoResponse, Json};
 use diesel_async::{pooled_connection::bb8::Pool, AsyncPgConnection};
@@ -45,33 +45,32 @@ pub async fn grant_role_handler(
     }
     let role = role.unwrap();
 
-    if role.is_default {
-        let callback = check_privileges_callback();
-        let has_privilege = crate::utils::db::check_has_privilege(
-            &mut conn,
-            user_id,
-            resource_id,
-            "grant",
-            "role",
-            Some(callback),
-            Some(role.privileges.0),
-        )
-        .await?;
-
-        if !has_privilege {
-            return Err(ApiErrResp::unauthorized(Some(
-                "You don't have privilege to grant role".to_owned(),
-            )));
+    if !role.is_default {
+        if role.resource_id != Some(resource_id) {
+            return Err(ApiErrResp {
+                code: StatusCode::BAD_REQUEST,
+                error: "BAD_REQUEST".to_string(),
+                message: "Role does not exist on the resource".to_string(),
+            });
         }
-    } else {
-        // check if the user has root access to custom role
-        let is_root = check_user_is_root(&mut conn, user_id, role_id).await?;
+    }
 
-        if !is_root {
-            return Err(ApiErrResp::unauthorized(Some(
-                "You don't have privilege to grant role".to_owned(),
-            )));
-        }
+    let callback = check_privileges_callback();
+    let has_privilege = crate::utils::db::check_has_privilege(
+        &mut conn,
+        user_id,
+        resource_id,
+        "grant",
+        "role",
+        Some(callback),
+        Some(role.privileges.0),
+    )
+    .await?;
+
+    if !has_privilege {
+        return Err(ApiErrResp::unauthorized(Some(
+            "You don't have privilege to grant role".to_owned(),
+        )));
     }
 
     let new_relation = NewRelation {

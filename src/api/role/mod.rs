@@ -23,10 +23,8 @@ mod update;
 
 pub fn init_role_routes() -> Router<Arc<Pool<AsyncPgConnection>>> {
     Router::new()
-        .route(
-            "/custom",
-            post(create_custom_role_handler).get(list_custom_roles_handler),
-        )
+        .route("/custom", post(create_custom_role_handler))
+        .route("/custom/:resource_id", get(list_custom_roles_handler))
         .route("/default", get(list_default_roles_handler))
         .route("/grant", post(grant::grant_role_handler))
         .route("/revoke", post(revoke::revoke_role_handler))

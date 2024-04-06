@@ -72,9 +72,6 @@ pub async fn create_custom_role_handler(
         });
     }
 
-    // check if the privileges are subset or equal to the user privileges
-    // if not return an error
-
     let new_role = NewRole {
         name: new_role.name,
         description: new_role.description,
